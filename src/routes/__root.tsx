@@ -146,7 +146,7 @@ function RootComponent() {
       <AuthProvider>
         <AuthzProvider>
           <Outlet />
-          <Toaster richColors position="top-right" />
+          <Toaster richColors closeButton position="top-right" duration={4000} />
         </AuthzProvider>
       </AuthProvider>
     </QueryClientProvider>
