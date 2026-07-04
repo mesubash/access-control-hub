@@ -6,6 +6,7 @@ const BASE_URL =
 
 let accessToken: string | null = null;
 let onUnauthorized: (() => void) | null = null;
+let onForbidden: ((err: ApiError) => void) | null = null;
 
 export function setAccessToken(token: string | null) {
   accessToken = token;
@@ -15,6 +16,9 @@ export function getAccessToken() {
 }
 export function setUnauthorizedHandler(fn: (() => void) | null) {
   onUnauthorized = fn;
+}
+export function setForbiddenHandler(fn: ((err: ApiError) => void) | null) {
+  onForbidden = fn;
 }
 
 export class ApiError extends Error {
@@ -108,7 +112,15 @@ export async function request<T = unknown>(path: string, opts: Options = {}): Pr
       const m = (body as { message: unknown }).message;
       if (typeof m === "string" && m.length > 0) message = m;
     }
-    throw new ApiError(res.status, message, body);
+    const err = new ApiError(res.status, message, body);
+    if (res.status === 403 && onForbidden) {
+      try {
+        onForbidden(err);
+      } catch {
+        /* ignore */
+      }
+    }
+    throw err;
   }
 
   if (body && typeof body === "object" && "data" in body && "status" in body) {
