@@ -3,6 +3,8 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { authzApi, metaApi, type ScopeSummary } from "@/api/resources";
 import type { FeatureFlags } from "@/api/types";
 import { useAuth } from "./AuthContext";
+import { setForbiddenHandler } from "@/api/client";
+import { toast } from "sonner";
 
 type AuthzState = {
   scopes: ScopeSummary[];
@@ -56,6 +58,20 @@ export function AuthzProvider({ children }: { children: ReactNode }) {
     queryFn: () => authzApi.myPermissions(scopeId!),
     enabled: isAuthenticated && !!scopeId,
   });
+
+  // Global 403 handler: quiet toast + refetch permissions for current scope.
+  useEffect(() => {
+    let lastAt = 0;
+    setForbiddenHandler(() => {
+      const now = Date.now();
+      if (now - lastAt > 1500) {
+        lastAt = now;
+        toast.message("Not available for your access level");
+      }
+      qc.invalidateQueries({ queryKey: ["authz", "perms"] });
+    });
+    return () => setForbiddenHandler(null);
+  }, [qc]);
 
   const setScopeId = (id: string) => {
     setScopeIdState(id);
