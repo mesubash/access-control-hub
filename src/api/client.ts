@@ -103,10 +103,11 @@ export async function request<T = unknown>(path: string, opts: Options = {}): Pr
   }
 
   if (!res.ok) {
-    const message =
-      (body && typeof body === "object" && "message" in body && String((body as { message: unknown }).message)) ||
-      res.statusText ||
-      `HTTP ${res.status}`;
+    let message = res.statusText || `HTTP ${res.status}`;
+    if (body && typeof body === "object" && "message" in body) {
+      const m = (body as { message: unknown }).message;
+      if (typeof m === "string" && m.length > 0) message = m;
+    }
     throw new ApiError(res.status, message, body);
   }
 
