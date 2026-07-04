@@ -9,38 +9,103 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedMeSessionsRouteImport } from './routes/_authenticated.me.sessions'
+import { Route as AuthenticatedMeSecurityRouteImport } from './routes/_authenticated.me.security'
+import { Route as AuthenticatedMeAccessRouteImport } from './routes/_authenticated.me.access'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedMeSessionsRoute = AuthenticatedMeSessionsRouteImport.update({
+  id: '/me/sessions',
+  path: '/me/sessions',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMeSecurityRoute = AuthenticatedMeSecurityRouteImport.update({
+  id: '/me/security',
+  path: '/me/security',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMeAccessRoute = AuthenticatedMeAccessRouteImport.update({
+  id: '/me/access',
+  path: '/me/access',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/me/access': typeof AuthenticatedMeAccessRoute
+  '/me/security': typeof AuthenticatedMeSecurityRoute
+  '/me/sessions': typeof AuthenticatedMeSessionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/me/access': typeof AuthenticatedMeAccessRoute
+  '/me/security': typeof AuthenticatedMeSecurityRoute
+  '/me/sessions': typeof AuthenticatedMeSessionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_authenticated/me/access': typeof AuthenticatedMeAccessRoute
+  '/_authenticated/me/security': typeof AuthenticatedMeSecurityRoute
+  '/_authenticated/me/sessions': typeof AuthenticatedMeSessionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/login' | '/me/access' | '/me/security' | '/me/sessions'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/login' | '/me/access' | '/me/security' | '/me/sessions'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/login'
+    | '/_authenticated/me/access'
+    | '/_authenticated/me/security'
+    | '/_authenticated/me/sessions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +113,50 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/me/sessions': {
+      id: '/_authenticated/me/sessions'
+      path: '/me/sessions'
+      fullPath: '/me/sessions'
+      preLoaderRoute: typeof AuthenticatedMeSessionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/me/security': {
+      id: '/_authenticated/me/security'
+      path: '/me/security'
+      fullPath: '/me/security'
+      preLoaderRoute: typeof AuthenticatedMeSecurityRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/me/access': {
+      id: '/_authenticated/me/access'
+      path: '/me/access'
+      fullPath: '/me/access'
+      preLoaderRoute: typeof AuthenticatedMeAccessRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedMeAccessRoute: typeof AuthenticatedMeAccessRoute
+  AuthenticatedMeSecurityRoute: typeof AuthenticatedMeSecurityRoute
+  AuthenticatedMeSessionsRoute: typeof AuthenticatedMeSessionsRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedMeAccessRoute: AuthenticatedMeAccessRoute,
+  AuthenticatedMeSecurityRoute: AuthenticatedMeSecurityRoute,
+  AuthenticatedMeSessionsRoute: AuthenticatedMeSessionsRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
