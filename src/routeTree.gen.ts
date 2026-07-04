@@ -15,6 +15,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedMeSessionsRouteImport } from './routes/_authenticated.me.sessions'
 import { Route as AuthenticatedMeSecurityRouteImport } from './routes/_authenticated.me.security'
 import { Route as AuthenticatedMeAccessRouteImport } from './routes/_authenticated.me.access'
+import { Route as AuthenticatedAdminScopesRouteImport } from './routes/_authenticated.admin.scopes'
+import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated.admin.dashboard'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -45,10 +47,24 @@ const AuthenticatedMeAccessRoute = AuthenticatedMeAccessRouteImport.update({
   path: '/me/access',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminScopesRoute =
+  AuthenticatedAdminScopesRouteImport.update({
+    id: '/admin/scopes',
+    path: '/admin/scopes',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAdminDashboardRoute =
+  AuthenticatedAdminDashboardRouteImport.update({
+    id: '/admin/dashboard',
+    path: '/admin/dashboard',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/scopes': typeof AuthenticatedAdminScopesRoute
   '/me/access': typeof AuthenticatedMeAccessRoute
   '/me/security': typeof AuthenticatedMeSecurityRoute
   '/me/sessions': typeof AuthenticatedMeSessionsRoute
@@ -56,6 +72,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/scopes': typeof AuthenticatedAdminScopesRoute
   '/me/access': typeof AuthenticatedMeAccessRoute
   '/me/security': typeof AuthenticatedMeSecurityRoute
   '/me/sessions': typeof AuthenticatedMeSessionsRoute
@@ -65,20 +83,38 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/_authenticated/admin/scopes': typeof AuthenticatedAdminScopesRoute
   '/_authenticated/me/access': typeof AuthenticatedMeAccessRoute
   '/_authenticated/me/security': typeof AuthenticatedMeSecurityRoute
   '/_authenticated/me/sessions': typeof AuthenticatedMeSessionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/me/access' | '/me/security' | '/me/sessions'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/admin/dashboard'
+    | '/admin/scopes'
+    | '/me/access'
+    | '/me/security'
+    | '/me/sessions'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/me/access' | '/me/security' | '/me/sessions'
+  to:
+    | '/'
+    | '/login'
+    | '/admin/dashboard'
+    | '/admin/scopes'
+    | '/me/access'
+    | '/me/security'
+    | '/me/sessions'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/admin/dashboard'
+    | '/_authenticated/admin/scopes'
     | '/_authenticated/me/access'
     | '/_authenticated/me/security'
     | '/_authenticated/me/sessions'
@@ -134,16 +170,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMeAccessRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/scopes': {
+      id: '/_authenticated/admin/scopes'
+      path: '/admin/scopes'
+      fullPath: '/admin/scopes'
+      preLoaderRoute: typeof AuthenticatedAdminScopesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/dashboard': {
+      id: '/_authenticated/admin/dashboard'
+      path: '/admin/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AuthenticatedAdminDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
+  AuthenticatedAdminScopesRoute: typeof AuthenticatedAdminScopesRoute
   AuthenticatedMeAccessRoute: typeof AuthenticatedMeAccessRoute
   AuthenticatedMeSecurityRoute: typeof AuthenticatedMeSecurityRoute
   AuthenticatedMeSessionsRoute: typeof AuthenticatedMeSessionsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
+  AuthenticatedAdminScopesRoute: AuthenticatedAdminScopesRoute,
   AuthenticatedMeAccessRoute: AuthenticatedMeAccessRoute,
   AuthenticatedMeSecurityRoute: AuthenticatedMeSecurityRoute,
   AuthenticatedMeSessionsRoute: AuthenticatedMeSessionsRoute,

@@ -9,7 +9,7 @@ import { PermissionGuardedPage } from "@/components/iam/PermissionGuardedPage";
 import { Can } from "@/components/iam/Can";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/iam/Field";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
