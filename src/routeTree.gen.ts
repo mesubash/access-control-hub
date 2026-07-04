@@ -15,11 +15,17 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedMeSessionsRouteImport } from './routes/_authenticated.me.sessions'
 import { Route as AuthenticatedMeSecurityRouteImport } from './routes/_authenticated.me.security'
 import { Route as AuthenticatedMeAccessRouteImport } from './routes/_authenticated.me.access'
+import { Route as AuthenticatedAdminServicesRouteImport } from './routes/_authenticated.admin.services'
 import { Route as AuthenticatedAdminScopesRouteImport } from './routes/_authenticated.admin.scopes'
 import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated.admin.roles'
+import { Route as AuthenticatedAdminResourceGrantsRouteImport } from './routes/_authenticated.admin.resource-grants'
 import { Route as AuthenticatedAdminPoliciesRouteImport } from './routes/_authenticated.admin.policies'
+import { Route as AuthenticatedAdminPermissionsRouteImport } from './routes/_authenticated.admin.permissions'
+import { Route as AuthenticatedAdminGroupsRouteImport } from './routes/_authenticated.admin.groups'
+import { Route as AuthenticatedAdminExplainRouteImport } from './routes/_authenticated.admin.explain'
 import { Route as AuthenticatedAdminDenyRulesRouteImport } from './routes/_authenticated.admin.deny-rules'
 import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated.admin.dashboard'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated.admin.audit'
 import { Route as AuthenticatedAdminAssignmentsRouteImport } from './routes/_authenticated.admin.assignments'
 
 const LoginRoute = LoginRouteImport.update({
@@ -51,6 +57,12 @@ const AuthenticatedMeAccessRoute = AuthenticatedMeAccessRouteImport.update({
   path: '/me/access',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminServicesRoute =
+  AuthenticatedAdminServicesRouteImport.update({
+    id: '/admin/services',
+    path: '/admin/services',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAdminScopesRoute =
   AuthenticatedAdminScopesRouteImport.update({
     id: '/admin/scopes',
@@ -62,10 +74,34 @@ const AuthenticatedAdminRolesRoute = AuthenticatedAdminRolesRouteImport.update({
   path: '/admin/roles',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminResourceGrantsRoute =
+  AuthenticatedAdminResourceGrantsRouteImport.update({
+    id: '/admin/resource-grants',
+    path: '/admin/resource-grants',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAdminPoliciesRoute =
   AuthenticatedAdminPoliciesRouteImport.update({
     id: '/admin/policies',
     path: '/admin/policies',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAdminPermissionsRoute =
+  AuthenticatedAdminPermissionsRouteImport.update({
+    id: '/admin/permissions',
+    path: '/admin/permissions',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAdminGroupsRoute =
+  AuthenticatedAdminGroupsRouteImport.update({
+    id: '/admin/groups',
+    path: '/admin/groups',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAdminExplainRoute =
+  AuthenticatedAdminExplainRouteImport.update({
+    id: '/admin/explain',
+    path: '/admin/explain',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedAdminDenyRulesRoute =
@@ -80,6 +116,11 @@ const AuthenticatedAdminDashboardRoute =
     path: '/admin/dashboard',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/admin/audit',
+  path: '/admin/audit',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAdminAssignmentsRoute =
   AuthenticatedAdminAssignmentsRouteImport.update({
     id: '/admin/assignments',
@@ -91,11 +132,17 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/admin/assignments': typeof AuthenticatedAdminAssignmentsRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/admin/deny-rules': typeof AuthenticatedAdminDenyRulesRoute
+  '/admin/explain': typeof AuthenticatedAdminExplainRoute
+  '/admin/groups': typeof AuthenticatedAdminGroupsRoute
+  '/admin/permissions': typeof AuthenticatedAdminPermissionsRoute
   '/admin/policies': typeof AuthenticatedAdminPoliciesRoute
+  '/admin/resource-grants': typeof AuthenticatedAdminResourceGrantsRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/admin/scopes': typeof AuthenticatedAdminScopesRoute
+  '/admin/services': typeof AuthenticatedAdminServicesRoute
   '/me/access': typeof AuthenticatedMeAccessRoute
   '/me/security': typeof AuthenticatedMeSecurityRoute
   '/me/sessions': typeof AuthenticatedMeSessionsRoute
@@ -104,11 +151,17 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/admin/assignments': typeof AuthenticatedAdminAssignmentsRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/admin/deny-rules': typeof AuthenticatedAdminDenyRulesRoute
+  '/admin/explain': typeof AuthenticatedAdminExplainRoute
+  '/admin/groups': typeof AuthenticatedAdminGroupsRoute
+  '/admin/permissions': typeof AuthenticatedAdminPermissionsRoute
   '/admin/policies': typeof AuthenticatedAdminPoliciesRoute
+  '/admin/resource-grants': typeof AuthenticatedAdminResourceGrantsRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/admin/scopes': typeof AuthenticatedAdminScopesRoute
+  '/admin/services': typeof AuthenticatedAdminServicesRoute
   '/me/access': typeof AuthenticatedMeAccessRoute
   '/me/security': typeof AuthenticatedMeSecurityRoute
   '/me/sessions': typeof AuthenticatedMeSessionsRoute
@@ -119,11 +172,17 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/admin/assignments': typeof AuthenticatedAdminAssignmentsRoute
+  '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/_authenticated/admin/deny-rules': typeof AuthenticatedAdminDenyRulesRoute
+  '/_authenticated/admin/explain': typeof AuthenticatedAdminExplainRoute
+  '/_authenticated/admin/groups': typeof AuthenticatedAdminGroupsRoute
+  '/_authenticated/admin/permissions': typeof AuthenticatedAdminPermissionsRoute
   '/_authenticated/admin/policies': typeof AuthenticatedAdminPoliciesRoute
+  '/_authenticated/admin/resource-grants': typeof AuthenticatedAdminResourceGrantsRoute
   '/_authenticated/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/_authenticated/admin/scopes': typeof AuthenticatedAdminScopesRoute
+  '/_authenticated/admin/services': typeof AuthenticatedAdminServicesRoute
   '/_authenticated/me/access': typeof AuthenticatedMeAccessRoute
   '/_authenticated/me/security': typeof AuthenticatedMeSecurityRoute
   '/_authenticated/me/sessions': typeof AuthenticatedMeSessionsRoute
@@ -134,11 +193,17 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/admin/assignments'
+    | '/admin/audit'
     | '/admin/dashboard'
     | '/admin/deny-rules'
+    | '/admin/explain'
+    | '/admin/groups'
+    | '/admin/permissions'
     | '/admin/policies'
+    | '/admin/resource-grants'
     | '/admin/roles'
     | '/admin/scopes'
+    | '/admin/services'
     | '/me/access'
     | '/me/security'
     | '/me/sessions'
@@ -147,11 +212,17 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/admin/assignments'
+    | '/admin/audit'
     | '/admin/dashboard'
     | '/admin/deny-rules'
+    | '/admin/explain'
+    | '/admin/groups'
+    | '/admin/permissions'
     | '/admin/policies'
+    | '/admin/resource-grants'
     | '/admin/roles'
     | '/admin/scopes'
+    | '/admin/services'
     | '/me/access'
     | '/me/security'
     | '/me/sessions'
@@ -161,11 +232,17 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/_authenticated/admin/assignments'
+    | '/_authenticated/admin/audit'
     | '/_authenticated/admin/dashboard'
     | '/_authenticated/admin/deny-rules'
+    | '/_authenticated/admin/explain'
+    | '/_authenticated/admin/groups'
+    | '/_authenticated/admin/permissions'
     | '/_authenticated/admin/policies'
+    | '/_authenticated/admin/resource-grants'
     | '/_authenticated/admin/roles'
     | '/_authenticated/admin/scopes'
+    | '/_authenticated/admin/services'
     | '/_authenticated/me/access'
     | '/_authenticated/me/security'
     | '/_authenticated/me/sessions'
@@ -221,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMeAccessRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/services': {
+      id: '/_authenticated/admin/services'
+      path: '/admin/services'
+      fullPath: '/admin/services'
+      preLoaderRoute: typeof AuthenticatedAdminServicesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin/scopes': {
       id: '/_authenticated/admin/scopes'
       path: '/admin/scopes'
@@ -235,11 +319,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRolesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/resource-grants': {
+      id: '/_authenticated/admin/resource-grants'
+      path: '/admin/resource-grants'
+      fullPath: '/admin/resource-grants'
+      preLoaderRoute: typeof AuthenticatedAdminResourceGrantsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin/policies': {
       id: '/_authenticated/admin/policies'
       path: '/admin/policies'
       fullPath: '/admin/policies'
       preLoaderRoute: typeof AuthenticatedAdminPoliciesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/permissions': {
+      id: '/_authenticated/admin/permissions'
+      path: '/admin/permissions'
+      fullPath: '/admin/permissions'
+      preLoaderRoute: typeof AuthenticatedAdminPermissionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/groups': {
+      id: '/_authenticated/admin/groups'
+      path: '/admin/groups'
+      fullPath: '/admin/groups'
+      preLoaderRoute: typeof AuthenticatedAdminGroupsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/explain': {
+      id: '/_authenticated/admin/explain'
+      path: '/admin/explain'
+      fullPath: '/admin/explain'
+      preLoaderRoute: typeof AuthenticatedAdminExplainRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin/deny-rules': {
@@ -256,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
+      path: '/admin/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin/assignments': {
       id: '/_authenticated/admin/assignments'
       path: '/admin/assignments'
@@ -268,11 +387,17 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminAssignmentsRoute: typeof AuthenticatedAdminAssignmentsRoute
+  AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
   AuthenticatedAdminDenyRulesRoute: typeof AuthenticatedAdminDenyRulesRoute
+  AuthenticatedAdminExplainRoute: typeof AuthenticatedAdminExplainRoute
+  AuthenticatedAdminGroupsRoute: typeof AuthenticatedAdminGroupsRoute
+  AuthenticatedAdminPermissionsRoute: typeof AuthenticatedAdminPermissionsRoute
   AuthenticatedAdminPoliciesRoute: typeof AuthenticatedAdminPoliciesRoute
+  AuthenticatedAdminResourceGrantsRoute: typeof AuthenticatedAdminResourceGrantsRoute
   AuthenticatedAdminRolesRoute: typeof AuthenticatedAdminRolesRoute
   AuthenticatedAdminScopesRoute: typeof AuthenticatedAdminScopesRoute
+  AuthenticatedAdminServicesRoute: typeof AuthenticatedAdminServicesRoute
   AuthenticatedMeAccessRoute: typeof AuthenticatedMeAccessRoute
   AuthenticatedMeSecurityRoute: typeof AuthenticatedMeSecurityRoute
   AuthenticatedMeSessionsRoute: typeof AuthenticatedMeSessionsRoute
@@ -280,11 +405,17 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminAssignmentsRoute: AuthenticatedAdminAssignmentsRoute,
+  AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
   AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
   AuthenticatedAdminDenyRulesRoute: AuthenticatedAdminDenyRulesRoute,
+  AuthenticatedAdminExplainRoute: AuthenticatedAdminExplainRoute,
+  AuthenticatedAdminGroupsRoute: AuthenticatedAdminGroupsRoute,
+  AuthenticatedAdminPermissionsRoute: AuthenticatedAdminPermissionsRoute,
   AuthenticatedAdminPoliciesRoute: AuthenticatedAdminPoliciesRoute,
+  AuthenticatedAdminResourceGrantsRoute: AuthenticatedAdminResourceGrantsRoute,
   AuthenticatedAdminRolesRoute: AuthenticatedAdminRolesRoute,
   AuthenticatedAdminScopesRoute: AuthenticatedAdminScopesRoute,
+  AuthenticatedAdminServicesRoute: AuthenticatedAdminServicesRoute,
   AuthenticatedMeAccessRoute: AuthenticatedMeAccessRoute,
   AuthenticatedMeSecurityRoute: AuthenticatedMeSecurityRoute,
   AuthenticatedMeSessionsRoute: AuthenticatedMeSessionsRoute,
