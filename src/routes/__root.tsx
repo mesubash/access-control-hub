@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/context/AuthContext";
 import { AuthzProvider } from "@/context/AuthzContext";
 import { Toaster } from "@/components/ui/sonner";
+import { ApiError } from "@/api/client";
 
 function NotFoundComponent() {
   return (
@@ -38,11 +39,33 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    if (!(error instanceof ApiError && error.status === 403)) {
+      console.error(error);
+      reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    }
   }, [error]);
+
+  if (error instanceof ApiError && error.status === 403) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-10">
+        <div className="rounded border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-[13px] text-[var(--muted-foreground)]">
+          Not available for your access level.
+          <button
+            type="button"
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+            className="ml-3 text-[var(--primary)] hover:underline"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
