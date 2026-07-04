@@ -35,8 +35,19 @@ function LoginPage() {
       if (res.message) toast.success(res.message);
       navigate({ to: "/me/access" });
     } catch (err) {
-      const msg = err instanceof ApiError ? err.message : "Sign-in failed.";
+      let msg = "Sign-in failed. Please try again.";
+      if (err instanceof ApiError) {
+        // Prefer the server-provided message when available.
+        if (err.message) {
+          msg = err.message;
+        } else if (err.status === 401) {
+          msg = "Invalid email or password.";
+        } else if (err.status === 403) {
+          msg = "Your account is not permitted to sign in.";
+        }
+      }
       setError(msg);
+      toast.error(msg);
     } finally {
       setPending(false);
     }
