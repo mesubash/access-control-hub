@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 
 import { ApiError } from "@/api/client";
@@ -35,8 +35,11 @@ function LoginPage() {
     if (isAuthenticated) void navigate({ to: "/admin/dashboard" });
   }, [isAuthenticated, navigate]);
 
-  const run = async (e: FormEvent, fn: () => Promise<Awaited<ReturnType<typeof login>>>) => {
-    e.preventDefault();
+  const run = async (
+    e: FormEvent | undefined,
+    fn: () => Promise<Awaited<ReturnType<typeof login>>>,
+  ) => {
+    e?.preventDefault();
     setError(null);
     setPending(true);
     try {
@@ -81,7 +84,16 @@ function LoginPage() {
               />
               <div className="px-6 pt-7 pb-7 sm:px-8 sm:pb-8">
                 {step.kind === "password" ? (
-                  <Panel title="Sign in" subtitle="Administrators and auditors only.">
+                  <Panel
+                    title="Sign in to the console"
+                    subtitle="Manage who can do what across your apps. For administrators and auditors."
+                  >
+                    {DEMO ? (
+                      <DemoAccounts
+                        pending={pending}
+                        onPick={(demoEmail) => run(undefined, () => login(demoEmail, "demo"))}
+                      />
+                    ) : null}
                     <form
                       onSubmit={(e) => run(e, () => login(email.trim(), password))}
                       className="grid gap-4"
@@ -167,15 +179,6 @@ function LoginPage() {
               </div>
             </div>
           </div>
-          {DEMO ? (
-            <p className="mt-8 rounded-lg border border-dashed border-[var(--input)] px-4 py-3 text-[13px] leading-relaxed text-[var(--muted-foreground)]">
-              <strong className="font-medium text-[var(--foreground)]">Demo.</strong> Nothing is
-              saved and any password works. Sign in as{" "}
-              <code className="font-mono text-[var(--foreground)]">admin@example.com</code>, or{" "}
-              <code className="font-mono text-[var(--foreground)]">auditor@example.com</code> for a
-              read-only view.
-            </p>
-          ) : null}
         </div>
       </main>
     </div>
@@ -241,5 +244,64 @@ function BackLink({ onClick }: { onClick: () => void }) {
     >
       Back to sign in
     </button>
+  );
+}
+
+const DEMO_ACCOUNTS = [
+  {
+    email: "admin@example.com",
+    name: "Asha Shrestha",
+    role: "Super admin",
+    what: "Change anything: users, roles, policies.",
+  },
+  {
+    email: "auditor@example.com",
+    name: "Bikash Rai",
+    role: "Audit viewer",
+    what: "Read-only. Every change is refused.",
+  },
+];
+
+/** Demo only: one-click sign-in as a sample account, then the usual form below. */
+function DemoAccounts({ pending, onPick }: { pending: boolean; onPick: (email: string) => void }) {
+  return (
+    <div className="mb-6">
+      <p className="mb-2.5 text-[13px] text-[var(--muted-foreground)]">
+        This is a demo with sample data. Pick an account:
+      </p>
+      <div className="grid gap-2">
+        {DEMO_ACCOUNTS.map((a) => (
+          <button
+            key={a.email}
+            type="button"
+            disabled={pending}
+            onClick={() => onPick(a.email)}
+            className="group flex items-center gap-3 rounded-lg border border-[var(--border)] px-3 py-2.5 text-left transition-colors hover:border-[var(--primary)] hover:bg-[var(--primary-subtle)] disabled:opacity-60"
+          >
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[var(--primary-subtle)] text-[14px] font-semibold text-[var(--primary)] group-hover:bg-[var(--card)]">
+              {a.name.charAt(0)}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="flex items-baseline gap-2">
+                <span className="text-[14px] font-medium">{a.role}</span>
+                <span className="truncate text-[12.5px] text-[var(--muted-foreground)]">
+                  {a.name}
+                </span>
+              </span>
+              <span className="block text-[12.5px] text-[var(--muted-foreground)]">{a.what}</span>
+            </span>
+            <ArrowRight
+              className="size-4 shrink-0 text-[var(--muted-foreground)] transition-transform group-hover:translate-x-0.5 group-hover:text-[var(--primary)]"
+              aria-hidden="true"
+            />
+          </button>
+        ))}
+      </div>
+      <div className="mt-5 flex items-center gap-3 text-[12.5px] text-[var(--muted-foreground)]">
+        <span className="h-px flex-1 bg-[var(--border)]" />
+        or use email (any password)
+        <span className="h-px flex-1 bg-[var(--border)]" />
+      </div>
+    </div>
   );
 }

@@ -1,67 +1,53 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
+import { ArrowRight, CircleCheck } from "lucide-react";
+import type { ReactNode } from "react";
 
-import { assignmentsApi, auditApi, policiesApi, rolesApi, scopesApi } from "@/api/resources";
+import {
+  assignmentsApi,
+  auditApi,
+  identitiesApi,
+  policiesApi,
+  rolesApi,
+  scopesApi,
+} from "@/api/resources";
 import type { AdminAction } from "@/api/types";
 import { DataTable, type Column } from "@/components/iam/DataTable";
 import { Tag } from "@/components/iam/badges";
-import { When } from "@/components/iam/When";
 import { PageHeader } from "@/components/iam/PageHeader";
-import { useAuth } from "@/context/AuthContext";
+import { When } from "@/components/iam/When";
 import { useAuthz } from "@/context/AuthzContext";
 import { pageTitle } from "@/lib/brand";
-import { formatDate } from "@/lib/format";
+import { describeAction, describeResult } from "@/lib/describeAction";
+import { isExpiring } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/dashboard")({
   head: () => ({ meta: [{ title: pageTitle("Overview") }] }),
   component: DashboardPage,
 });
 
-function Stat({
-  label,
-  value,
-  to,
-  loading,
-}: {
-  label: string;
-  value?: number;
+type Item = {
+  key: string;
+  tone: "warning" | "destructive" | "neutral";
+  text: ReactNode;
   to: string;
-  loading: boolean;
-}) {
-  return (
-    <Link
-      to={to}
-      className="group rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-3.5 transition-colors hover:border-[var(--input)]"
-    >
-      <p className="flex items-center justify-between text-[13px] text-[var(--muted-foreground)]">
-        {label}
-        <ChevronRight className="size-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
-      </p>
-      <p className="mt-1 text-[26px] leading-tight font-semibold tracking-tight tabular-nums">
-        {loading ? (
-          <span className="inline-block h-6 w-10 animate-pulse rounded bg-[var(--muted)]" />
-        ) : (
-          (value ?? "—")
-        )}
-      </p>
-    </Link>
-  );
-}
+  cta: string;
+};
+
+const DOT = {
+  destructive: "bg-[var(--destructive)]",
+  warning: "bg-[var(--warning)]",
+  neutral: "bg-[var(--muted-foreground)]/50",
+};
+
+const plural = (n: number, one: string, many = one + "s") => `${n} ${n === 1 ? one : many}`;
 
 function DashboardPage() {
-  const { identity } = useAuth();
   const { can } = useAuthz();
-
-  const scopes = useQuery({
-    queryKey: ["scopes"],
-    queryFn: scopesApi.list,
-    enabled: can("platform.scope.read"),
-  });
-  const roles = useQuery({
-    queryKey: ["roles"],
-    queryFn: rolesApi.list,
-    enabled: can("platform.role.read"),
+  const users = useQuery({
+    queryKey: ["identities", "all"],
+    queryFn: () => identitiesApi.list({ limit: 200 }),
+    enabled: can("platform.identity.read"),
   });
   const assignments = useQuery({
     queryKey: ["assignments"],
@@ -73,68 +59,147 @@ function DashboardPage() {
     queryFn: policiesApi.list,
     enabled: can("platform.policy.read"),
   });
+  const roles = useQuery({
+    queryKey: ["roles"],
+    queryFn: rolesApi.list,
+    enabled: can("platform.role.read"),
+  });
+  const scopes = useQuery({
+    queryKey: ["scopes"],
+    queryFn: scopesApi.list,
+    enabled: can("platform.scope.read"),
+  });
   const actions = useQuery({
     queryKey: ["audit", "admin", 0],
     queryFn: () => auditApi.adminActions(0),
     enabled: can("platform.audit.read"),
   });
 
+  const u = users.data ?? [];
+  const a = (assignments.data ?? []).filter((x) => x.active !== false);
+  const p = (policies.data ?? []).filter((x) => x.active !== false);
+
+  const locked = u.filter((x) => x.accountStatus === "LOCKED");
+  const expiring = a.filter((x) => isExpiring(x.expiresAt));
+  const shadow = p.filter((x) => x.enforcementMode === "SHADOW");
+  const noMfa = u.filter((x) => x.accountStatus === "ACTIVE" && !x.mfaEnabled);
+  const unverified = u.filter((x) => !x.emailVerified);
+
+  // What an admin should look at, most urgent first. Empty groups are left out.
+  const items = [
+    locked.length > 0 && {
+      key: "locked",
+      tone: "destructive",
+      text: `${plural(locked.length, "account")} locked after failed sign-ins`,
+      to: "/admin/users",
+      cta: "Review",
+    },
+    expiring.length > 0 && {
+      key: "expiring",
+      tone: "warning",
+      text: `${plural(expiring.length, "role assignment")} expiring within a week`,
+      to: "/admin/assignments",
+      cta: "Check",
+    },
+    noMfa.length > 0 && {
+      key: "mfa",
+      tone: "warning",
+      text: `${plural(noMfa.length, "active user")} without two-step verification`,
+      to: "/admin/users",
+      cta: "See who",
+    },
+    shadow.length > 0 && {
+      key: "shadow",
+      tone: "neutral",
+      text: `${plural(shadow.length, "policy", "policies")} in shadow mode: logged, not enforced`,
+      to: "/admin/policies",
+      cta: "Decide",
+    },
+    unverified.length > 0 && {
+      key: "unverified",
+      tone: "neutral",
+      text: `${plural(unverified.length, "user")} with an unverified email`,
+      to: "/admin/users",
+      cta: "See who",
+    },
+  ].filter(Boolean) as Item[];
+
+  const loading = users.isLoading || assignments.isLoading || policies.isLoading;
+
+  const summary = [
+    scopes.data && plural(scopes.data.length, "scope"),
+    roles.data && plural(roles.data.length, "role"),
+    users.data && plural(u.length, "user"),
+    assignments.data && plural(a.length, "active assignment"),
+    policies.data && plural(p.length, "active policy", "active policies"),
+  ].filter(Boolean);
+
   const columns: Column<AdminAction>[] = [
-    { key: "t", header: "When", width: "130px", render: (a) => <When at={a.createdAt} /> },
-    { key: "who", header: "Who", render: (a) => a.actorEmail ?? "—" },
+    { key: "t", header: "When", width: "130px", render: (x) => <When at={x.createdAt} /> },
+    { key: "who", header: "Who", render: (x) => x.actorEmail ?? "—" },
     {
       key: "what",
-      header: "Request",
-      render: (a) => (
-        <span className="block max-w-[46ch] truncate font-mono text-[12.5px]" title={a.path}>
-          {a.method} {a.path}
-        </span>
+      header: "Change",
+      render: (x) => (
+        <span title={`${x.method} ${x.path}`}>{describeAction(x.method, x.path)}</span>
       ),
     },
     {
       key: "s",
       header: "Result",
-      width: "90px",
-      render: (a) => <Tag tone={a.status < 400 ? "success" : "destructive"}>{a.status}</Tag>,
+      width: "100px",
+      render: (x) => {
+        const r = describeResult(x.status);
+        return <Tag tone={r.ok ? "success" : "destructive"}>{r.label}</Tag>;
+      },
     },
   ];
-
-  const first = identity?.displayName?.split(" ")[0];
 
   return (
     <div>
       <PageHeader
-        title={first ? `Hello, ${first}` : "Overview"}
-        description="What's set up in this IAM, and the latest changes made through it."
+        title="Overview"
+        description={summary.length ? `This IAM has ${summary.join(", ")}.` : undefined}
       />
-      <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat
-          label="Scopes"
-          to="/admin/scopes"
-          value={scopes.data?.length}
-          loading={scopes.isLoading}
-        />
-        <Stat
-          label="Roles"
-          to="/admin/roles"
-          value={roles.data?.length}
-          loading={roles.isLoading}
-        />
-        <Stat
-          label="Assignments"
-          to="/admin/assignments"
-          value={assignments.data?.filter((a) => a.active !== false).length}
-          loading={assignments.isLoading}
-        />
-        <Stat
-          label="Policies"
-          to="/admin/policies"
-          value={policies.data?.filter((p) => p.active !== false).length}
-          loading={policies.isLoading}
-        />
-      </div>
+
+      <section className="mb-10">
+        <h2 className="mb-3 text-[15px] font-semibold">Needs attention</h2>
+        {loading ? (
+          <div className="h-24 animate-pulse rounded-lg bg-[var(--muted)]" />
+        ) : items.length === 0 ? (
+          <p className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-4 text-[14px] text-[var(--muted-foreground)]">
+            <CircleCheck className="size-4 text-[var(--success)]" aria-hidden="true" />
+            Nothing right now.
+          </p>
+        ) : (
+          <ul className="divide-y divide-[var(--border)] overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)]">
+            {items.map((it) => (
+              <li key={it.key}>
+                <Link
+                  to={it.to}
+                  className="group flex items-center gap-3 px-4 py-3 text-[14px] hover:bg-[var(--muted)]/60"
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`size-2 shrink-0 rounded-full ${DOT[it.tone]}`}
+                  />
+                  <span className="flex-1">{it.text}</span>
+                  <span className="flex items-center gap-1 text-[13px] text-[var(--primary)]">
+                    {it.cta}
+                    <ArrowRight
+                      className="size-3.5 transition-transform group-hover:translate-x-0.5"
+                      aria-hidden="true"
+                    />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       {can("platform.audit.read") ? (
-        <>
+        <section>
           <div className="mb-3 flex items-baseline justify-between">
             <h2 className="text-[15px] font-semibold">Latest changes</h2>
             <Link to="/admin/audit" className="text-[13px] text-[var(--primary)] hover:underline">
@@ -143,12 +208,12 @@ function DashboardPage() {
           </div>
           <DataTable
             columns={columns}
-            rows={actions.data?.content.slice(0, 8)}
+            rows={actions.data?.content.slice(0, 6)}
             loading={actions.isLoading}
             empty="Nothing has been changed through the admin API yet."
-            rowKey={(a) => a.id}
+            rowKey={(x) => x.id}
           />
-        </>
+        </section>
       ) : null}
     </div>
   );

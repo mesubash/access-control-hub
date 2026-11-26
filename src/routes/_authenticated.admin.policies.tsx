@@ -16,6 +16,7 @@ import { ConfirmDialog } from "@/components/iam/ConfirmDialog";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -117,10 +118,11 @@ function PoliciesPage() {
       <ConfirmDialog
         open={!!toDelete}
         onOpenChange={(v) => !v && setToDelete(null)}
-        title="Delete policy"
+        title="Turn off this policy?"
+        description="It stops being checked straight away. You can turn it back on later."
         target={toDelete?.name}
         destructive
-        confirmLabel="Delete"
+        confirmLabel="Turn off"
         pending={del.isPending}
         onConfirm={() => del.mutate()}
       />
@@ -156,6 +158,20 @@ function PolicyDialog({
   );
   const [jsonErr, setJsonErr] = useState<string | null>(null);
   const [showRef, setShowRef] = useState(false);
+  const [confirmEnforce, setConfirmEnforce] = useState(false);
+  // Moving to ENFORCE changes live decisions, so it gets its own confirmation.
+  const startsEnforcing =
+    enforcementMode === "ENFORCE" && (!policy || policy.enforcementMode !== "ENFORCE");
+
+  const turnOn = useMutation({
+    mutationFn: () => policiesApi.update(policy!.id, { active: true }),
+    onSuccess: () => {
+      toast.success("Policy turned back on");
+      void qc.invalidateQueries({ queryKey: ["policies"] });
+      onOpenChange(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const validateJson = (v: string) => {
     try {
@@ -183,7 +199,8 @@ function PolicyDialog({
       return policy ? policiesApi.update(policy.id, body) : policiesApi.create(body);
     },
     onSuccess: () => {
-      toast.success(policy ? "Policy updated" : "Policy created");
+      toast.success(policy ? "Policy saved" : "Policy created");
+      setConfirmEnforce(false);
       qc.invalidateQueries({ queryKey: ["policies"] });
       onOpenChange(false);
     },
@@ -194,35 +211,41 @@ function PolicyDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{policy ? `Edit policy: ${policy.name}` : "New policy"}</DialogTitle>
+          <DialogTitle>{policy ? policy.name : "New policy"}</DialogTitle>
+          <DialogDescription>
+            {policy
+              ? "A policy's name is fixed once created; everything else can change."
+              : "Checked after roles. Start in shadow mode to see what it would do before it blocks anyone."}
+          </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
-            <Label htmlFor="p-name">Name</Label>
-            <Input id="p-name" value={name} onChange={(e) => setName(e.target.value)} />
+            {policy ? null : (
+              <>
+                <Label htmlFor="p-name">Name</Label>
+                <Input id="p-name" value={name} onChange={(e) => setName(e.target.value)} />
+              </>
+            )}
             <Label htmlFor="p-effect">Effect</Label>
             <select
               id="p-effect"
               value={effect}
-              onChange={(e) => setEffect(e.target.value as "ALLOW" | "DENY")}
-              className="h-9 w-full rounded border border-[var(--border)] bg-[var(--card)] px-2 text-sm"
+              onChange={(e) => setEffect(e.target.value)}
+              className="h-9 w-full rounded-md border border-[var(--input)] bg-[var(--card)] px-2 text-sm"
             >
-              <option>ALLOW</option>
-              <option>DENY</option>
+              <option value="ALLOW">Allow when the conditions match</option>
+              <option value="DENY">Deny when the conditions match</option>
             </select>
-            <Label htmlFor="p-mode">Enforcement mode</Label>
+            <Label htmlFor="p-mode">Mode</Label>
             <select
               id="p-mode"
               value={enforcementMode}
               onChange={(e) => setEnforcementMode(e.target.value as "ENFORCE" | "SHADOW")}
-              className="h-9 w-full rounded border border-[var(--border)] bg-[var(--card)] px-2 text-sm"
+              className="h-9 w-full rounded-md border border-[var(--input)] bg-[var(--card)] px-2 text-sm"
             >
-              <option>SHADOW</option>
-              <option>ENFORCE</option>
+              <option value="SHADOW">Shadow: log what it would do</option>
+              <option value="ENFORCE">Enforce: affects real decisions</option>
             </select>
-            <p className="text-xs text-[var(--muted-foreground)]">
-              Shadow policies are evaluated and audited but never affect decisions.
-            </p>
             <Label htmlFor="p-pri">Priority</Label>
             <Input
               id="p-pri"
@@ -230,9 +253,12 @@ function PolicyDialog({
               value={priority}
               onChange={(e) => setPriority(Number(e.target.value))}
             />
-            <Label htmlFor="p-perm">Permission key</Label>
+            <Label htmlFor="p-perm">Applies to permission</Label>
             <Input
               id="p-perm"
+              className="font-mono"
+              spellCheck={false}
+              placeholder="orders.order.refund"
               value={permissionKey}
               onChange={(e) => setPermissionKey(e.target.value)}
             />
@@ -253,7 +279,8 @@ function PolicyDialog({
                 validateJson(e.target.value);
               }}
               rows={14}
-              className="w-full rounded border border-[var(--border)] bg-[var(--card)] p-2 font-mono text-xs"
+              spellCheck={false}
+              className="w-full rounded-md border border-[var(--border)] bg-[var(--card)] p-2 font-mono text-xs"
             />
             {jsonErr ? <p className="text-xs text-[var(--destructive)]">{jsonErr}</p> : null}
             <button
@@ -271,22 +298,42 @@ function PolicyDialog({
           </div>
         </div>
         <DialogFooter>
-          {policy && onDelete ? (
-            <Button variant="outline" style={{ color: "var(--destructive)" }} onClick={onDelete}>
-              Delete
+          {policy && onDelete && policy.active !== false ? (
+            <Button
+              variant="outline"
+              className="sm:mr-auto"
+              style={{ color: "var(--destructive)" }}
+              onClick={onDelete}
+            >
+              Turn off
+            </Button>
+          ) : null}
+          {policy && policy.active === false ? (
+            <Button variant="outline" className="sm:mr-auto" onClick={() => turnOn.mutate()}>
+              Turn back on
             </Button>
           ) : null}
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button
-            onClick={() => save.mutate()}
+            onClick={() => (startsEnforcing ? setConfirmEnforce(true) : save.mutate())}
             disabled={save.isPending || !name || !permissionKey || !!jsonErr}
           >
-            {save.isPending ? "Saving..." : "Save"}
+            {save.isPending ? "Saving…" : policy ? "Save changes" : "Create policy"}
           </Button>
         </DialogFooter>
       </DialogContent>
+      <ConfirmDialog
+        open={confirmEnforce}
+        onOpenChange={setConfirmEnforce}
+        title="Start enforcing this policy?"
+        description={`From now on it can ${effect === "DENY" ? "block" : "allow"} real requests for ${permissionKey || "this permission"}. Check the audit log for what it did in shadow mode first.`}
+        confirmLabel="Enforce"
+        destructive={effect === "DENY"}
+        pending={save.isPending}
+        onConfirm={() => save.mutate()}
+      />
     </Dialog>
   );
 }

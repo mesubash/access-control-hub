@@ -38,3 +38,48 @@ export function Subject({ id }: { id?: string | null }) {
     </span>
   );
 }
+
+/**
+ * Choose a user by name when the user list is readable; otherwise type an ID.
+ * Used wherever spring-iam wants a subject ID.
+ */
+export function UserPicker({
+  id,
+  value,
+  onChange,
+  placeholder = "Choose a user…",
+}: {
+  id?: string;
+  value: string;
+  onChange: (id: string) => void;
+  placeholder?: string;
+}) {
+  const users = useUsersById();
+  if (users.size === 0) {
+    return (
+      <input
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value.trim())}
+        placeholder="User ID (UUID)"
+        spellCheck={false}
+        className="flex h-9 w-full min-w-0 rounded-md border border-[var(--input)] bg-[var(--card)] px-3 font-mono text-[13px]"
+      />
+    );
+  }
+  return (
+    <select
+      id={id}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="h-9 w-full min-w-0 rounded-md border border-[var(--input)] bg-[var(--card)] px-2 text-[13px]"
+    >
+      <option value="">{placeholder}</option>
+      {[...users.values()].map((u) => (
+        <option key={u.id} value={u.id}>
+          {u.displayName ? `${u.displayName} (${u.email})` : u.email}
+        </option>
+      ))}
+    </select>
+  );
+}

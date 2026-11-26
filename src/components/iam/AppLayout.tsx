@@ -22,6 +22,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import type { FeatureFlags } from "@/api/types";
 import { useAuth } from "@/context/AuthContext";
@@ -105,7 +106,8 @@ export function AppLayout() {
 
   const handleLogout = async () => {
     await logout();
-    navigate({ to: "/login" });
+    toast.success("Signed out");
+    void navigate({ to: "/login" });
   };
 
   return (
@@ -149,13 +151,23 @@ export function AppLayout() {
             <NavGroup label="Administration" items={visibleAdmin} pathname={pathname} />
           ) : null}
         </nav>
-        <div className="border-t border-[var(--border)] px-4 py-3 text-[13px]">
-          <p className="truncate font-medium" title={identity?.email}>
-            {identity?.displayName || identity?.email || "…"}
-          </p>
-          {identity?.displayName ? (
-            <p className="truncate text-[var(--muted-foreground)]">{identity.email}</p>
-          ) : null}
+        <div className="flex items-center gap-2 border-t border-[var(--border)] py-3 pr-2 pl-4 text-[13px]">
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-medium" title={identity?.email}>
+              {identity?.displayName || identity?.email || "…"}
+            </p>
+            {identity?.displayName ? (
+              <p className="truncate text-[var(--muted-foreground)]">{identity.email}</p>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-[13px] text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+          >
+            <LogOut className="size-3.5" aria-hidden="true" />
+            Sign out
+          </button>
         </div>
       </aside>
 

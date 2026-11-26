@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { resourceGrantsApi } from "@/api/resources";
 import type { ResourceGrant } from "@/api/types";
 import { When } from "@/components/iam/When";
-import { Subject } from "@/components/iam/Subject";
+import { Subject, UserPicker } from "@/components/iam/Subject";
 import { PageHeader } from "@/components/iam/PageHeader";
 import { DataTable, type Column } from "@/components/iam/DataTable";
 import { Button } from "@/components/ui/button";
@@ -95,16 +95,12 @@ function ResourceGrantsPage() {
   return (
     <div>
       <PageHeader
-        title="Resource Grants"
+        title="Resource grants"
         description="One permission on one specific thing, such as a single order, without a role."
         actions={<Button onClick={() => setCreating(true)}>New grant</Button>}
       />
-      <div className="mb-3 flex gap-2">
-        <Input
-          placeholder="Subject ID"
-          value={subjectId}
-          onChange={(e) => setSubjectId(e.target.value)}
-        />
+      <div className="mb-4 grid gap-2 sm:grid-cols-[minmax(0,1.4fr)_1fr_1fr]">
+        <UserPicker value={subjectId} onChange={setSubjectId} placeholder="Any user" />
         <Input
           placeholder="Resource type"
           value={resourceType}
@@ -185,7 +181,7 @@ function CreateDialog({
         </DialogHeader>
         <div className="space-y-2">
           <Label>Subject ID</Label>
-          <Input value={subjectId} onChange={(e) => setSubjectId(e.target.value)} />
+          <UserPicker value={subjectId} onChange={setSubjectId} />
           <Label>Permission key</Label>
           <Input value={permissionKey} onChange={(e) => setPermissionKey(e.target.value)} />
           <Label>Resource type</Label>

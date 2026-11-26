@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { assignmentsApi, rolesApi, scopesApi } from "@/api/resources";
 import type { Assignment } from "@/api/types";
-import { Subject } from "@/components/iam/Subject";
+import { Subject, UserPicker } from "@/components/iam/Subject";
 import { PageHeader } from "@/components/iam/PageHeader";
 import { PermissionGuardedPage } from "@/components/iam/PermissionGuardedPage";
 import { Can } from "@/components/iam/Can";
@@ -127,13 +127,8 @@ function AssignmentsPage() {
           </Can>
         }
       />
-      <div className="mb-3">
-        <Input
-          placeholder="Filter by user ID"
-          value={subjectId}
-          onChange={(e) => setSubjectId(e.target.value)}
-          className="max-w-xs"
-        />
+      <div className="mb-4 max-w-sm">
+        <UserPicker value={subjectId} onChange={setSubjectId} placeholder="Everyone" />
       </div>
       <DataTable
         columns={columns}
@@ -215,8 +210,8 @@ function GrantDialog({
           <DialogTitle>Grant assignment</DialogTitle>
         </DialogHeader>
         <div className="space-y-2">
-          <Label htmlFor="a-sub">User, group or service ID</Label>
-          <Input id="a-sub" value={subjectId} onChange={(e) => setSubjectId(e.target.value)} />
+          <Label htmlFor="a-sub">Who</Label>
+          <UserPicker id="a-sub" value={subjectId} onChange={setSubjectId} />
           <Label htmlFor="a-st">Subject type</Label>
           <select
             id="a-st"

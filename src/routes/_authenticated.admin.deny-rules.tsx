@@ -6,7 +6,7 @@ import { denyRulesApi } from "@/api/resources";
 import type { DenyRule } from "@/api/types";
 import { SubjectLookup } from "@/components/iam/SubjectLookup";
 import { When } from "@/components/iam/When";
-import { Subject } from "@/components/iam/Subject";
+import { Subject, UserPicker } from "@/components/iam/Subject";
 import { PageHeader } from "@/components/iam/PageHeader";
 import { PermissionGuardedPage } from "@/components/iam/PermissionGuardedPage";
 import { Can } from "@/components/iam/Can";
@@ -177,8 +177,8 @@ function CreateDialog({
           <DialogTitle>New deny rule</DialogTitle>
         </DialogHeader>
         <div className="space-y-2">
-          <Label htmlFor="d-sub">Subject ID</Label>
-          <Input id="d-sub" value={subjectId} onChange={(e) => setSubjectId(e.target.value)} />
+          <Label htmlFor="d-sub">Who</Label>
+          <UserPicker id="d-sub" value={subjectId} onChange={setSubjectId} />
           <Label htmlFor="d-st">Subject type</Label>
           <select
             id="d-st"

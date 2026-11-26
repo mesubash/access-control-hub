@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { authzApi, permissionsApi, scopesApi } from "@/api/resources";
 import type { ExplainResult, ExplainStep } from "@/api/types";
 import { DecisionBadge } from "@/components/iam/badges";
-import { useUsersById } from "@/components/iam/Subject";
+import { UserPicker } from "@/components/iam/Subject";
 import { PageHeader } from "@/components/iam/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +45,6 @@ const TONE: Record<ExplainStep["outcome"], string> = {
 
 function ExplainPage() {
   const { scopeId: currentScope } = useAuthz();
-  const users = useUsersById();
   const scopes = useQuery({ queryKey: ["scopes"], queryFn: scopesApi.list, retry: false });
   const [subject, setSubject] = useState("");
   const [permission, setPermission] = useState("");
@@ -86,31 +85,7 @@ function ExplainPage() {
           className="grid min-w-0 gap-3.5 rounded-lg border border-[var(--border)] bg-[var(--card)] p-5"
         >
           <Field label="User" id="x-subject">
-            {users.size > 0 ? (
-              <select
-                id="x-subject"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                required
-                className="h-9 w-full min-w-0 rounded-md border border-[var(--input)] bg-[var(--card)] px-2 text-[13px]"
-              >
-                <option value="">Choose a user…</option>
-                {[...users.values()].map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.displayName ? `${u.displayName} (${u.email})` : u.email}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <Input
-                id="x-subject"
-                className="font-mono"
-                placeholder="User ID"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                required
-              />
-            )}
+            <UserPicker id="x-subject" value={subject} onChange={setSubject} />
           </Field>
           <PermissionPicker value={permission} onChange={setPermission} />
           <Field label="Scope" id="x-scope">

@@ -16,6 +16,7 @@ export function DataTable<T>({
   empty = "No results.",
   rowKey,
   onRowClick,
+  selectedKey,
 }: {
   columns: Column<T>[];
   rows: T[] | undefined;
@@ -23,6 +24,8 @@ export function DataTable<T>({
   empty?: ReactNode;
   rowKey: (row: T, idx: number) => string;
   onRowClick?: (row: T) => void;
+  /** rowKey of the row shown in a side panel, highlighted. */
+  selectedKey?: string | null;
 }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-[var(--border)] bg-[var(--card)]">
@@ -76,8 +79,12 @@ export function DataTable<T>({
                       }
                     : undefined
                 }
+                aria-selected={selectedKey != null ? rowKey(r, i) === selectedKey : undefined}
                 className={cn(
                   "border-b border-[var(--border)] last:border-b-0",
+                  selectedKey != null &&
+                    rowKey(r, i) === selectedKey &&
+                    "bg-[var(--primary-subtle)]",
                   onRowClick &&
                     "cursor-pointer hover:bg-[var(--muted)]/70 focus-visible:bg-[var(--muted)] focus-visible:outline-none",
                 )}

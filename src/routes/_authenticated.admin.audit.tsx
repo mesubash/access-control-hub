@@ -8,12 +8,13 @@ import { DataTable, type Column } from "@/components/iam/DataTable";
 import { DecisionBadge, Tag } from "@/components/iam/badges";
 import { When } from "@/components/iam/When";
 import { Subject } from "@/components/iam/Subject";
+import { SubjectLookup } from "@/components/iam/SubjectLookup";
 import { PageHeader } from "@/components/iam/PageHeader";
 import { PermissionGuardedPage } from "@/components/iam/PermissionGuardedPage";
 import { Pager } from "@/components/iam/Pager";
 import { Tabs } from "@/components/iam/Tabs";
-import { Input } from "@/components/ui/input";
 import { pageTitle } from "@/lib/brand";
+import { describeAction, describeResult } from "@/lib/describeAction";
 import { formatDate, humanize } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/audit")({
@@ -52,9 +53,6 @@ function AuditPage() {
   );
 }
 
-const methodTone = (m: string) =>
-  m === "DELETE" ? "destructive" : m === "GET" ? "neutral" : ("accent" as const);
-
 function AdminActions() {
   const [page, setPage] = useState(0);
   const q = useQuery({
@@ -66,23 +64,19 @@ function AdminActions() {
     { key: "who", header: "Who", render: (a) => a.actorEmail ?? a.actorId ?? "—" },
     {
       key: "what",
-      header: "Request",
+      header: "Change",
       render: (a) => (
-        <span className="flex items-center gap-2">
-          <Tag tone={methodTone(a.method)} mono>
-            {a.method}
-          </Tag>
-          <span className="max-w-[46ch] truncate font-mono text-[12.5px]" title={a.path}>
-            {a.path}
-          </span>
-        </span>
+        <span title={`${a.method} ${a.path}`}>{describeAction(a.method, a.path)}</span>
       ),
     },
     {
       key: "s",
       header: "Result",
-      width: "90px",
-      render: (a) => <Tag tone={a.status < 400 ? "success" : "destructive"}>{a.status}</Tag>,
+      width: "100px",
+      render: (a) => {
+        const r = describeResult(a.status);
+        return <Tag tone={r.ok ? "success" : "destructive"}>{r.label}</Tag>;
+      },
     },
   ];
   return (
@@ -137,7 +131,6 @@ function SecurityEvents() {
 }
 
 function Decisions() {
-  const [draft, setDraft] = useState("");
   const [subjectId, setSubjectId] = useState("");
   const q = useQuery({
     queryKey: ["audit", "subject", subjectId],
@@ -166,27 +159,7 @@ function Decisions() {
   ];
   return (
     <>
-      <form
-        className="mb-4 flex max-w-xl gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setSubjectId(draft.trim());
-        }}
-      >
-        <Input
-          aria-label="User ID"
-          placeholder="User ID (UUID)"
-          className="font-mono"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-        />
-        <button
-          type="submit"
-          className="h-9 shrink-0 rounded-md bg-[var(--primary)] px-4 text-[13px] font-medium text-[var(--primary-foreground)] hover:bg-[var(--primary-hover)]"
-        >
-          Show decisions
-        </button>
-      </form>
+      <SubjectLookup label="Show decisions" onSubmit={setSubjectId} />
       {subjectId ? (
         <DataTable
           columns={columns}

@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { scopesApi } from "@/api/resources";
+import { assignmentsApi, rolesApi, scopesApi } from "@/api/resources";
 import type { Scope } from "@/api/types";
+import { Subject } from "@/components/iam/Subject";
 import { PageHeader } from "@/components/iam/PageHeader";
 import { PermissionGuardedPage } from "@/components/iam/PermissionGuardedPage";
 import { Can } from "@/components/iam/Can";
@@ -22,6 +23,7 @@ import { Tag } from "@/components/iam/badges";
 import { cn } from "@/lib/utils";
 import { useAuthz } from "@/context/AuthzContext";
 import { pageTitle } from "@/lib/brand";
+import { humanize } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/scopes")({
   head: () => ({ meta: [{ title: pageTitle("Scopes") }] }),
@@ -80,8 +82,8 @@ function ScopesPage() {
           </Can>
         }
       />
-      <div className="grid grid-cols-[1fr_320px] gap-4">
-        <div className="rounded border border-[var(--border)] bg-[var(--card)]">
+      <div className="grid items-start gap-4 lg:grid-cols-[1fr_340px]">
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-1.5">
           {q.isLoading ? (
             <div className="p-3 text-sm text-[var(--muted-foreground)]">Loading…</div>
           ) : tree.length === 0 ? (
@@ -96,29 +98,18 @@ function ScopesPage() {
             </ul>
           )}
         </div>
-        <aside className="rounded border border-[var(--border)] bg-[var(--card)] p-4 text-sm">
-          {!selected ? (
-            <p className="text-[var(--muted-foreground)]">Select a scope to see details.</p>
-          ) : (
-            <div className="space-y-3">
-              <div>
-                <div className="text-xs text-[var(--muted-foreground)]">Name</div>
-                <div className="font-medium">{selected.name}</div>
-              </div>
-              <MetaRow label="Code" mono value={selected.code} />
-              <MetaRow label="Type" value={selected.type} />
-              <MetaRow label="Path" mono value={selected.path} />
-              <MetaRow label="Depth" value={String(selected.depth)} />
-              <MetaRow label="Active" value={selected.active ? "Yes" : "No"} />
-              <MetaRow label="Descendants" value={String(descendants)} />
-              {can("platform.scope.move") ? (
-                <Button variant="outline" size="sm" onClick={() => setMoveOpen(true)}>
-                  Move scope
-                </Button>
-              ) : null}
-            </div>
-          )}
-        </aside>
+        {selected ? (
+          <ScopeDetail
+            scope={selected}
+            subScopes={descendants}
+            canMove={can("platform.scope.move")}
+            onMove={() => setMoveOpen(true)}
+          />
+        ) : (
+          <p className="rounded-lg border border-dashed border-[var(--input)] p-5 text-[13.5px] text-[var(--muted-foreground)]">
+            Pick a scope to see who has roles there.
+          </p>
+        )}
       </div>
       <CreateScopeDialog open={createOpen} onOpenChange={setCreateOpen} parent={selected} />
       {selected ? (
@@ -129,15 +120,6 @@ function ScopesPage() {
           all={q.data ?? []}
         />
       ) : null}
-    </div>
-  );
-}
-
-function MetaRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
-  return (
-    <div>
-      <div className="text-xs text-[var(--muted-foreground)]">{label}</div>
-      <div className={cn("text-sm", mono && "font-mono text-[13px]")}>{value}</div>
     </div>
   );
 }
@@ -161,14 +143,21 @@ function TreeRow({
           type="button"
           onClick={() => onSelect(node)}
           className={cn(
-            "flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm hover:bg-[var(--background)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)]",
-            isActive && "bg-[var(--primary-subtle)] text-[var(--primary)]",
+            "flex w-full items-center gap-2 rounded-md py-2 pr-2 text-left text-[14px] hover:bg-[var(--muted)]",
+            isActive &&
+              "bg-[var(--primary-subtle)] text-[var(--primary)] hover:bg-[var(--primary-subtle)]",
           )}
-          style={{ paddingLeft: 8 + depth * 16 }}
+          style={{ paddingLeft: 10 + depth * 22 }}
+          aria-current={isActive ? "true" : undefined}
         >
+          {depth > 0 ? (
+            <span aria-hidden="true" className="-ml-3 text-[var(--input)]">
+              └
+            </span>
+          ) : null}
           <span className="font-medium">{node.name}</span>
-          <span className="font-mono text-xs text-[var(--muted-foreground)]">{node.code}</span>
-          <Tag className="ml-auto">{node.type}</Tag>
+          <span className="font-mono text-[12px] text-[var(--muted-foreground)]">{node.code}</span>
+          <Tag className="ml-auto">{humanize(node.type)}</Tag>
         </button>
       </li>
       {node.children.map((c) => (
@@ -259,7 +248,7 @@ function MoveScopeDialog({
       open={open}
       onOpenChange={onOpenChange}
       title={`Move ${scope.name}`}
-      description="Moving a scope re-parents its whole subtree."
+      description="Everything under it moves too, and access inherited from the old parent stops applying."
       confirmLabel="Move"
       destructive
       pending={m.isPending}
@@ -271,11 +260,12 @@ function MoveScopeDialog({
           id="m-parent"
           value={target}
           onChange={(e) => setTarget(e.target.value)}
-          className="h-9 w-full rounded border border-[var(--border)] bg-[var(--card)] px-2 text-sm"
+          className="h-9 w-full rounded-md border border-[var(--input)] bg-[var(--card)] px-2 text-sm"
         >
-          <option value="">Select…</option>
+          <option value="">Choose a new parent…</option>
           {all
-            .filter((s) => s.id !== scope.id)
+            // A scope can't move under itself or anything below it.
+            .filter((s) => !s.path.startsWith(scope.path) && s.id !== scope.parentId)
             .map((s) => (
               <option key={s.id} value={s.id}>
                 {s.path}
@@ -284,5 +274,76 @@ function MoveScopeDialog({
         </select>
       </div>
     </ConfirmDialog>
+  );
+}
+
+function ScopeDetail({
+  scope,
+  subScopes,
+  canMove,
+  onMove,
+}: {
+  scope: Scope;
+  subScopes: number;
+  canMove: boolean;
+  onMove: () => void;
+}) {
+  const { can } = useAuthz();
+  const assignments = useQuery({
+    queryKey: ["assignments"],
+    queryFn: () => assignmentsApi.list(),
+    enabled: can("platform.assignment.read"),
+  });
+  const roles = useQuery({ queryKey: ["roles"], queryFn: rolesApi.list });
+  const here = (assignments.data ?? []).filter((a) => a.scopeId === scope.id && a.active !== false);
+  const roleName = (id: string) => {
+    const r = roles.data?.find((x) => x.id === id);
+    return r ? r.displayName || r.name : "Unknown role";
+  };
+
+  return (
+    <aside className="rounded-lg border border-[var(--border)] bg-[var(--card)]">
+      <header className="border-b border-[var(--border)] px-4 py-3">
+        <h2 className="font-semibold">{scope.name}</h2>
+        <p className="font-mono text-[12.5px] text-[var(--muted-foreground)]">{scope.path}</p>
+      </header>
+      <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-1.5 px-4 py-3 text-[13.5px]">
+        <dt className="text-[var(--muted-foreground)]">Type</dt>
+        <dd>{humanize(scope.type)}</dd>
+        <dt className="text-[var(--muted-foreground)]">Below it</dt>
+        <dd>{subScopes === 0 ? "Nothing" : `${subScopes} scope${subScopes === 1 ? "" : "s"}`}</dd>
+        <dt className="text-[var(--muted-foreground)]">Status</dt>
+        <dd>{scope.active ? "Active" : "Inactive"}</dd>
+      </dl>
+      {assignments.data ? (
+        <div className="border-t border-[var(--border)] px-4 py-3">
+          <p className="mb-2 text-[13px] font-medium">
+            Roles given here{" "}
+            <span className="font-normal text-[var(--muted-foreground)]">({here.length})</span>
+          </p>
+          {here.length === 0 ? (
+            <p className="text-[13px] text-[var(--muted-foreground)]">
+              None directly. Roles from scopes above still apply.
+            </p>
+          ) : (
+            <ul className="grid gap-2">
+              {here.map((a) => (
+                <li key={a.id} className="flex items-start justify-between gap-3 text-[13px]">
+                  <Subject id={a.subjectId} />
+                  <Tag>{roleName(a.roleId)}</Tag>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
+      {canMove ? (
+        <div className="border-t border-[var(--border)] px-4 py-3">
+          <Button variant="outline" size="sm" onClick={onMove}>
+            Move this scope
+          </Button>
+        </div>
+      ) : null}
+    </aside>
   );
 }
