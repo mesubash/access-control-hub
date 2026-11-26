@@ -25,16 +25,16 @@ export function DataTable<T>({
   onRowClick?: (row: T) => void;
 }) {
   return (
-    <div className="overflow-hidden rounded border border-[var(--border)] bg-[var(--card)]">
+    <div className="overflow-x-auto rounded-lg border border-[var(--border)] bg-[var(--card)]">
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="border-b border-[var(--border)] bg-[var(--background)]">
+          <tr className="border-b border-[var(--border)] bg-[var(--muted)]/60">
             {columns.map((c) => (
               <th
                 key={c.key}
                 style={{ width: c.width }}
                 className={cn(
-                  "px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-[var(--muted-foreground)]",
+                  "h-10 px-4 text-left text-[12.5px] font-medium whitespace-nowrap text-[var(--muted-foreground)]",
                   c.className,
                 )}
               >
@@ -48,7 +48,7 @@ export function DataTable<T>({
             Array.from({ length: 5 }).map((_, i) => (
               <tr key={`sk-${i}`} className="border-b border-[var(--border)]">
                 {columns.map((c) => (
-                  <td key={c.key} className="h-10 px-3 py-2">
+                  <td key={c.key} className="h-11 px-4 py-2">
                     <div className="h-3 w-24 animate-pulse rounded bg-[var(--muted)]" />
                   </td>
                 ))}
@@ -58,7 +58,7 @@ export function DataTable<T>({
             <tr>
               <td
                 colSpan={columns.length}
-                className="px-3 py-8 text-center text-sm text-[var(--muted-foreground)]"
+                className="px-4 py-12 text-center text-sm text-[var(--muted-foreground)]"
               >
                 {empty}
               </td>
@@ -79,14 +79,14 @@ export function DataTable<T>({
                 className={cn(
                   "border-b border-[var(--border)] last:border-b-0",
                   onRowClick &&
-                    "cursor-pointer hover:bg-[var(--background)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)]",
+                    "cursor-pointer hover:bg-[var(--muted)]/70 focus-visible:bg-[var(--muted)] focus-visible:outline-none",
                 )}
               >
                 {columns.map((c) => (
                   <td
                     key={c.key}
                     className={cn(
-                      "h-10 px-3 py-2 align-middle text-[var(--foreground)]",
+                      "h-11 px-4 py-2 align-middle text-[var(--foreground)]",
                       c.className,
                     )}
                   >

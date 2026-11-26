@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiError } from "@/api/client";
+import { pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/me/security")({
-  head: () => ({ meta: [{ title: "Security — IAM Console" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Security") }] }),
   component: SecurityPage,
 });
 
@@ -22,8 +23,8 @@ function SecurityPage() {
 
   const m = useMutation({
     mutationFn: () => authApi.changePassword(current, next),
-    onSuccess: (res) => {
-      toast.success(res.message ?? "Password changed");
+    onSuccess: () => {
+      toast.success("Password changed. Other devices stay signed in until you sign them out.");
       setCurrent("");
       setNext("");
       setConfirm("");
@@ -42,7 +43,7 @@ function SecurityPage() {
 
   return (
     <div>
-      <PageHeader title="Security" description="Manage your account credentials." />
+      <PageHeader title="Security" description="Change your password." />
       <form
         onSubmit={onSubmit}
         className="max-w-md space-y-4 rounded border border-[var(--border)] bg-[var(--card)] p-4"

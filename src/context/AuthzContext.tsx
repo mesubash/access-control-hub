@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { authzApi, metaApi, type ScopeSummary } from "@/api/resources";
-import type { FeatureFlags } from "@/api/types";
+import { authzApi, metaApi } from "@/api/resources";
+import type { FeatureFlags, ScopeSummary } from "@/api/types";
 import { useAuth } from "./AuthContext";
 import { setForbiddenHandler } from "@/api/client";
 import { toast } from "sonner";
@@ -48,7 +48,8 @@ export function AuthzProvider({ children }: { children: ReactNode }) {
   const scopes = scopesQ.data ?? [];
 
   useEffect(() => {
-    if (!scopeId && scopes.length > 0) {
+    // Fall back to the first scope when none is picked, or the remembered one is gone.
+    if (scopes.length > 0 && (!scopeId || !scopes.some((s) => s.id === scopeId))) {
       setScopeIdState(scopes[0].id);
     }
   }, [scopeId, scopes]);

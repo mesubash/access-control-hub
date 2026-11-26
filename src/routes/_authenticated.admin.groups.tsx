@@ -4,15 +4,17 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { groupsApi } from "@/api/resources";
 import type { Group } from "@/api/types";
+import { Subject } from "@/components/iam/Subject";
 import { PageHeader } from "@/components/iam/PageHeader";
 import { DataTable, type Column } from "@/components/iam/DataTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthz } from "@/context/AuthzContext";
+import { pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/admin/groups")({
-  head: () => ({ meta: [{ title: "Groups — IAM Console" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Groups") }] }),
   component: GroupsPage,
 });
 
@@ -31,7 +33,6 @@ function GroupsPage() {
       header: "Name",
       render: (g) => <span className="font-mono text-[13px]">{g.name}</span>,
     },
-    { key: "dn", header: "Display name", render: (g) => g.displayName ?? "—" },
     { key: "desc", header: "Description", render: (g) => g.description ?? "—" },
   ];
 
@@ -39,9 +40,9 @@ function GroupsPage() {
     <div>
       <PageHeader
         title="Groups"
-        description="Collections of subjects that receive shared assignments."
+        description="Give a role to a group once, instead of to each person."
       />
-      <div className="grid grid-cols-[1fr_360px] gap-4">
+      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
         <DataTable
           columns={columns}
           rows={q.data}
@@ -69,10 +70,9 @@ function GroupDetail({ group, onClose }: { group: Group; onClose: () => void }) 
     queryFn: () => groupsApi.members(group.id),
   });
   const [subjectId, setSubjectId] = useState("");
-  const [subjectType, setSubjectType] = useState("USER");
 
   const add = useMutation({
-    mutationFn: () => groupsApi.addMember(group.id, { subjectId, subjectType }),
+    mutationFn: () => groupsApi.addMember(group.id, subjectId.trim()),
     onSuccess: () => {
       toast.success("Member added");
       qc.invalidateQueries({ queryKey: ["group-members", group.id] });
@@ -107,19 +107,10 @@ function GroupDetail({ group, onClose }: { group: Group; onClose: () => void }) 
         <div className="flex gap-2">
           <Input
             id="gm-sub"
-            placeholder="Subject ID"
+            placeholder="User ID"
             value={subjectId}
             onChange={(e) => setSubjectId(e.target.value)}
           />
-          <select
-            value={subjectType}
-            onChange={(e) => setSubjectType(e.target.value)}
-            className="h-9 rounded border border-[var(--border)] bg-[var(--card)] px-2 text-sm"
-          >
-            <option value="USER">USER</option>
-            <option value="GROUP">GROUP</option>
-            <option value="SERVICE">SERVICE</option>
-          </select>
           <Button size="sm" onClick={() => add.mutate()} disabled={!subjectId || add.isPending}>
             Add
           </Button>
@@ -127,13 +118,11 @@ function GroupDetail({ group, onClose }: { group: Group; onClose: () => void }) 
       </div>
       <ul className="divide-y divide-[var(--border)]">
         {(members.data ?? []).map((m) => (
-          <li key={m.id} className="flex items-center justify-between py-1.5">
-            <span className="font-mono text-xs">
-              {m.subjectType}:{m.subjectId}
-            </span>
+          <li key={m.subjectId} className="flex items-center justify-between py-2">
+            <Subject id={m.subjectId} />
             <button
               className="text-xs text-[var(--destructive)]"
-              onClick={() => remove.mutate(m.id)}
+              onClick={() => remove.mutate(m.subjectId)}
             >
               Remove
             </button>

@@ -11,28 +11,37 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { BadgeMark } from "@/components/iam/BadgeMark";
+import { themeScript } from "@/components/iam/ThemeToggle";
 import { AuthProvider } from "@/context/AuthContext";
 import { AuthzProvider } from "@/context/AuthzContext";
 import { Toaster } from "@/components/ui/sonner";
 import { ApiError } from "@/api/client";
+import { APP_NAME, pageTitle } from "@/lib/brand";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
-        </div>
+    <Notice
+      title="Nothing at this address"
+      body="The page may have moved, or the link has a typo."
+      action={
+        <Link to="/admin/dashboard" className="text-[var(--primary)] hover:underline">
+          Go to the overview
+        </Link>
+      }
+    />
+  );
+}
+
+/** Quiet full-page message used for 404s and load errors. */
+function Notice({ title, body, action }: { title: string; body: string; action: ReactNode }) {
+  return (
+    <div className="flex min-h-dvh items-start justify-center px-4 pt-[18vh]">
+      <div className="max-w-md">
+        <BadgeMark className="mb-5 size-8 text-[var(--primary)]" />
+        <h1 className="text-[24px] font-semibold tracking-tight">{title}</h1>
+        <p className="mt-2 text-[15px] text-[var(--muted-foreground)]">{body}</p>
+        <div className="mt-5 text-[14px] font-medium">{action}</div>
       </div>
     </div>
   );
@@ -67,33 +76,22 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
-        </div>
-      </div>
-    </div>
+    <Notice
+      title="This page didn't load"
+      body="Something went wrong while loading it. Try again; if it keeps failing, the IAM may be down."
+      action={
+        <button
+          type="button"
+          className="text-[var(--primary)] hover:underline"
+          onClick={() => {
+            void router.invalidate();
+            reset();
+          }}
+        >
+          Try again
+        </button>
+      }
+    />
   );
 }
 
@@ -102,19 +100,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "IAM Console" },
-      { name: "description", content: "Identity and access management console." },
-      { property: "og:title", content: "IAM Console" },
-      { property: "og:description", content: "Identity and access management console." },
+      { title: pageTitle() },
+      {
+        name: "description",
+        content: "Admin console for spring-iam: users, roles, scopes, policies and audit.",
+      },
+      { property: "og:title", content: APP_NAME },
+      {
+        property: "og:description",
+        content: "Admin console for spring-iam: users, roles, scopes, policies and audit.",
+      },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:card", content: "summary" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
     ],
   }),
   shellComponent: RootShell,
@@ -125,11 +129,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    // The theme script and browser extensions touch <html> and <body> before hydration.
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Scripts />
       </body>

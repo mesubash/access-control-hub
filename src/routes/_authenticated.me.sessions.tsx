@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { authApi } from "@/api/resources";
 import type { Session } from "@/api/types";
+import { When } from "@/components/iam/When";
 import { PageHeader } from "@/components/iam/PageHeader";
 import { DataTable, type Column } from "@/components/iam/DataTable";
 import { Button } from "@/components/ui/button";
@@ -11,9 +12,10 @@ import { ConfirmDialog } from "@/components/iam/ConfirmDialog";
 import { formatDate } from "@/lib/format";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/context/AuthContext";
+import { pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/me/sessions")({
-  head: () => ({ meta: [{ title: "My Sessions — IAM Console" }] }),
+  head: () => ({ meta: [{ title: pageTitle("My sessions") }] }),
   component: MySessionsPage,
 });
 
@@ -48,8 +50,8 @@ function MySessionsPage() {
   const columns: Column<Session>[] = [
     { key: "device", header: "Device", render: (s) => s.deviceLabel ?? "—" },
     { key: "ip", header: "IP", render: (s) => s.createdIp ?? "—" },
-    { key: "created", header: "Created", render: (s) => formatDate(s.createdAt) },
-    { key: "used", header: "Last used", render: (s) => formatDate(s.lastUsedAt) },
+    { key: "created", header: "Created", render: (s) => <When at={s.createdAt} /> },
+    { key: "used", header: "Last used", render: (s) => <When at={s.lastUsedAt} /> },
     {
       key: "actions",
       header: "",
@@ -70,11 +72,11 @@ function MySessionsPage() {
   return (
     <div>
       <PageHeader
-        title="My Sessions"
-        description="Devices signed in with your account."
+        title="Sessions"
+        description="Where you're signed in. Sign out anything you don't recognise."
         actions={
           <Button variant="outline" onClick={() => setConfirmAll(true)}>
-            Log out all devices
+            Sign out everywhere
           </Button>
         }
       />
@@ -88,10 +90,10 @@ function MySessionsPage() {
       <ConfirmDialog
         open={!!toRevoke}
         onOpenChange={(v) => !v && setToRevoke(null)}
-        title="Revoke session"
+        title="Sign out this device?"
         description="This device will be signed out immediately."
         target={toRevoke?.deviceLabel ?? toRevoke?.id}
-        confirmLabel="Revoke"
+        confirmLabel="Sign out"
         destructive
         pending={revoke.isPending}
         onConfirm={() => toRevoke && revoke.mutate(toRevoke.id)}
@@ -99,9 +101,9 @@ function MySessionsPage() {
       <ConfirmDialog
         open={confirmAll}
         onOpenChange={setConfirmAll}
-        title="Log out all devices"
+        title="Sign out everywhere"
         description="Every session, including this one, will be signed out."
-        confirmLabel="Log out all"
+        confirmLabel="Sign out everywhere"
         destructive
         pending={logoutAll.isPending}
         onConfirm={() => logoutAll.mutate()}

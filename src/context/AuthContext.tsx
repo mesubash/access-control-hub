@@ -1,13 +1,17 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { setAccessToken, setUnauthorizedHandler } from "@/api/client";
+import { request, setAccessToken, setUnauthorizedHandler } from "@/api/client";
 import { authApi } from "@/api/resources";
-import type { Identity } from "@/api/types";
+import type { Identity, LoginResult, TokenResult } from "@/api/types";
+
+/** What the login form does next. */
+export type LoginStep = { next: "done" } | { next: "mfa"; challenge: string } | { next: "enroll" };
 
 type AuthState = {
   identity: Identity | null;
   isAuthenticated: boolean;
   isBootstrapping: boolean;
-  login: (email: string, password: string) => Promise<{ message?: string }>;
+  login: (email: string, password: string) => Promise<LoginStep>;
+  verifyMfa: (challenge: string, code: string) => Promise<LoginStep>;
   logout: () => Promise<void>;
   setIdentity: (id: Identity | null) => void;
 };
@@ -19,27 +23,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isBootstrapping, setIsBootstrapping] = useState(true);
 
   useEffect(() => {
-    // Attempt a silent refresh on load: cookie will let /refresh mint a token.
+    // Restore the session from spring-iam's refresh cookie, if there is one.
     let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(
-          `${(import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:8080"}/api/auth/refresh`,
-          { method: "POST", credentials: "include", headers: { Accept: "application/json" } },
-        );
-        if (res.ok) {
-          const body = await res.json();
-          const token = body?.data?.accessToken ?? body?.accessToken;
-          const id = body?.data?.identity ?? body?.identity ?? null;
-          if (token) setAccessToken(token);
-          if (!cancelled && id) setIdentity(id);
-        }
-      } catch {
-        /* ignore */
-      } finally {
-        if (!cancelled) setIsBootstrapping(false);
-      }
-    })();
+    request<TokenResult>("/api/auth/refresh", { method: "POST", skipAuthRetry: true })
+      .then((t) => {
+        if (cancelled || !t?.accessToken) return;
+        setAccessToken(t.accessToken);
+        setIdentity(t.identity);
+      })
+      .catch(() => {
+        // No session: the guard sends the user to /login.
+      })
+      .finally(() => !cancelled && setIsBootstrapping(false));
     return () => {
       cancelled = true;
     };
@@ -53,18 +48,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => setUnauthorizedHandler(null);
   }, []);
 
+  const finish = (r: LoginResult): LoginStep => {
+    if ("status" in r && r.status === "MFA_REQUIRED")
+      return { next: "mfa", challenge: r.challenge };
+    if ("status" in r && r.status === "MFA_ENROLLMENT_REQUIRED") return { next: "enroll" };
+    const t = r as TokenResult;
+    setAccessToken(t.accessToken);
+    setIdentity(t.identity);
+    return { next: "done" };
+  };
+
   const value = useMemo<AuthState>(
     () => ({
       identity,
       isAuthenticated: !!identity,
       isBootstrapping,
       setIdentity,
-      login: async (email, password) => {
-        const env = await authApi.login(email, password);
-        setAccessToken(env.data.accessToken);
-        setIdentity(env.data.identity);
-        return { message: env.message };
-      },
+      login: async (email, password) => finish(await authApi.login(email, password)),
+      verifyMfa: async (challenge, code) => finish(await authApi.mfaVerify(challenge, code)),
       logout: async () => {
         try {
           await authApi.logout();

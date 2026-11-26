@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { assignmentsApi, rolesApi } from "@/api/resources";
+import { assignmentsApi, rolesApi, scopesApi } from "@/api/resources";
 import type { Assignment } from "@/api/types";
+import { Subject } from "@/components/iam/Subject";
 import { PageHeader } from "@/components/iam/PageHeader";
 import { PermissionGuardedPage } from "@/components/iam/PermissionGuardedPage";
 import { Can } from "@/components/iam/Can";
@@ -21,9 +22,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formatDate, isExpiring } from "@/lib/format";
+import { pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/admin/assignments")({
-  head: () => ({ meta: [{ title: "Assignments — IAM Console" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Assignments") }] }),
   component: () => (
     <PermissionGuardedPage permission="platform.assignment.read">
       <AssignmentsPage />
@@ -37,6 +39,14 @@ function AssignmentsPage() {
     queryKey: ["assignments", subjectId || null],
     queryFn: () => assignmentsApi.list(subjectId ? { subjectId } : undefined),
   });
+  // Assignments carry IDs only; show role and scope names from their own lists.
+  const roles = useQuery({ queryKey: ["roles"], queryFn: rolesApi.list });
+  const scopes = useQuery({ queryKey: ["scopes"], queryFn: scopesApi.list, retry: false });
+  const roleName = (id: string) => {
+    const r = roles.data?.find((x) => x.id === id);
+    return r ? r.displayName || r.name : id.slice(0, 8);
+  };
+  const scopePath = (id: string) => scopes.data?.find((x) => x.id === id)?.path ?? id.slice(0, 8);
   const [createOpen, setCreateOpen] = useState(false);
   const [revoking, setRevoking] = useState<Assignment | null>(null);
   const [reason, setReason] = useState("");
@@ -57,18 +67,17 @@ function AssignmentsPage() {
     {
       key: "subject",
       header: "Subject",
-      render: (a) => <span className="font-mono text-xs">{a.subjectId}</span>,
+      render: (a) => <Subject id={a.subjectId} />,
     },
     {
       key: "role",
       header: "Role",
-      render: (a) => a.roleName ?? <span className="font-mono text-xs">{a.roleId}</span>,
+      render: (a) => roleName(a.roleId),
     },
     {
       key: "scope",
       header: "Scope",
-      render: (a) =>
-        a.scopePath ? <span className="font-mono text-xs">{a.scopePath}</span> : <Tag>Global</Tag>,
+      render: (a) => <span className="font-mono text-xs">{scopePath(a.scopeId)}</span>,
     },
     {
       key: "expires",
@@ -111,7 +120,7 @@ function AssignmentsPage() {
     <div>
       <PageHeader
         title="Assignments"
-        description="Role grants of subjects at scopes."
+        description="Who has which role, and where. A role given at a scope also applies to every scope under it."
         actions={
           <Can permission="platform.assignment.create">
             <Button onClick={() => setCreateOpen(true)}>Grant assignment</Button>
@@ -120,7 +129,7 @@ function AssignmentsPage() {
       />
       <div className="mb-3">
         <Input
-          placeholder="Filter by subjectId..."
+          placeholder="Filter by user ID"
           value={subjectId}
           onChange={(e) => setSubjectId(e.target.value)}
           className="max-w-xs"
@@ -139,9 +148,7 @@ function AssignmentsPage() {
         onOpenChange={(v) => !v && setRevoking(null)}
         title="Revoke assignment"
         description="A reason is required for the audit trail."
-        target={
-          revoking ? `${revoking.roleName ?? revoking.roleId} → ${revoking.subjectId}` : undefined
-        }
+        target={revoking ? `${roleName(revoking.roleId)} for ${revoking.subjectId}` : undefined}
         confirmLabel="Revoke"
         destructive
         pending={revoke.isPending}
@@ -165,6 +172,7 @@ function GrantDialog({
 }) {
   const qc = useQueryClient();
   const rolesQ = useQuery({ queryKey: ["roles"], queryFn: rolesApi.list });
+  const scopesQ = useQuery({ queryKey: ["scopes"], queryFn: scopesApi.list, retry: false });
   const [subjectId, setSubjectId] = useState("");
   const [subjectType, setSubjectType] = useState("USER");
   const [roleId, setRoleId] = useState("");
@@ -187,7 +195,7 @@ function GrantDialog({
         subjectId,
         subjectType,
         roleId,
-        scopeId: scopeId || null,
+        scopeId,
         expiresAt: expiresAt || null,
         conditions: parsedConditions,
       });
@@ -207,7 +215,7 @@ function GrantDialog({
           <DialogTitle>Grant assignment</DialogTitle>
         </DialogHeader>
         <div className="space-y-2">
-          <Label htmlFor="a-sub">Subject ID</Label>
+          <Label htmlFor="a-sub">User, group or service ID</Label>
           <Input id="a-sub" value={subjectId} onChange={(e) => setSubjectId(e.target.value)} />
           <Label htmlFor="a-st">Subject type</Label>
           <select
@@ -216,9 +224,9 @@ function GrantDialog({
             onChange={(e) => setSubjectType(e.target.value)}
             className="h-9 w-full rounded border border-[var(--border)] bg-[var(--card)] px-2 text-sm"
           >
-            <option value="USER">USER</option>
-            <option value="GROUP">GROUP</option>
-            <option value="SERVICE">SERVICE</option>
+            <option value="USER">User</option>
+            <option value="GROUP">Group</option>
+            <option value="SERVICE">Service</option>
           </select>
           <Label htmlFor="a-role">Role</Label>
           <select
@@ -234,8 +242,29 @@ function GrantDialog({
               </option>
             ))}
           </select>
-          <Label htmlFor="a-scope">Scope ID (optional)</Label>
-          <Input id="a-scope" value={scopeId} onChange={(e) => setScopeId(e.target.value)} />
+          <Label htmlFor="a-scope">Scope</Label>
+          {scopesQ.data ? (
+            <select
+              id="a-scope"
+              value={scopeId}
+              onChange={(e) => setScopeId(e.target.value)}
+              className="h-9 w-full rounded-md border border-[var(--input)] bg-[var(--card)] px-2 text-sm"
+            >
+              <option value="">Select…</option>
+              {scopesQ.data.map((sc) => (
+                <option key={sc.id} value={sc.id}>
+                  {sc.path}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <Input
+              id="a-scope"
+              placeholder="Scope ID"
+              value={scopeId}
+              onChange={(e) => setScopeId(e.target.value)}
+            />
+          )}
           <Label htmlFor="a-exp">Expires at (ISO, optional)</Label>
           <Input
             id="a-exp"
@@ -257,7 +286,10 @@ function GrantDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={() => m.mutate()} disabled={m.isPending || !subjectId || !roleId}>
+          <Button
+            onClick={() => m.mutate()}
+            disabled={m.isPending || !subjectId || !roleId || !scopeId}
+          >
             {m.isPending ? "Granting..." : "Grant"}
           </Button>
         </DialogFooter>

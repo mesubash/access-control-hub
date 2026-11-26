@@ -4,6 +4,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { resourceGrantsApi } from "@/api/resources";
 import type { ResourceGrant } from "@/api/types";
+import { When } from "@/components/iam/When";
+import { Subject } from "@/components/iam/Subject";
 import { PageHeader } from "@/components/iam/PageHeader";
 import { DataTable, type Column } from "@/components/iam/DataTable";
 import { Button } from "@/components/ui/button";
@@ -19,9 +21,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formatDate } from "@/lib/format";
+import { pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/admin/resource-grants")({
-  head: () => ({ meta: [{ title: "Resource Grants — IAM Console" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Resource grants") }] }),
   component: ResourceGrantsPage,
 });
 
@@ -34,11 +37,13 @@ function ResourceGrantsPage() {
   const q = useQuery({
     queryKey: ["rg", subjectId, resourceType, resourceId],
     queryFn: () =>
-      resourceGrantsApi.list({
+      resourceGrantsApi.find({
         subjectId: subjectId || undefined,
         resourceType: resourceType || undefined,
         resourceId: resourceId || undefined,
       }),
+    // spring-iam needs a user, or both resource type and id.
+    enabled: !!subjectId || (!!resourceType && !!resourceId),
   });
   const [creating, setCreating] = useState(false);
   const [toDelete, setToDelete] = useState<ResourceGrant | null>(null);
@@ -61,7 +66,7 @@ function ResourceGrantsPage() {
     {
       key: "sub",
       header: "Subject",
-      render: (r) => <span className="font-mono text-xs">{r.subjectId}</span>,
+      render: (r) => <Subject id={r.subjectId} />,
     },
     {
       key: "perm",
@@ -69,7 +74,7 @@ function ResourceGrantsPage() {
       render: (r) => <span className="font-mono text-xs">{r.permissionKey}</span>,
     },
     { key: "rt", header: "Resource", render: (r) => `${r.resourceType}:${r.resourceId}` },
-    { key: "exp", header: "Expires", render: (r) => formatDate(r.expiresAt) },
+    { key: "exp", header: "Expires", render: (r) => <When at={r.expiresAt} /> },
     {
       key: "act",
       header: "",
@@ -91,7 +96,7 @@ function ResourceGrantsPage() {
     <div>
       <PageHeader
         title="Resource Grants"
-        description="Per-resource permissions outside role assignments."
+        description="One permission on one specific thing, such as a single order, without a role."
         actions={<Button onClick={() => setCreating(true)}>New grant</Button>}
       />
       <div className="mb-3 flex gap-2">
@@ -115,7 +120,11 @@ function ResourceGrantsPage() {
         columns={columns}
         rows={q.data}
         loading={q.isLoading}
-        empty="No grants."
+        empty={
+          subjectId || (resourceType && resourceId)
+            ? "No grants match."
+            : "Enter a user ID, or a resource type and ID, to find grants."
+        }
         rowKey={(r) => r.id}
       />
       {creating ? <CreateDialog open onOpenChange={setCreating} /> : null}

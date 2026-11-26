@@ -1,126 +1,245 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+
+import { ApiError } from "@/api/client";
+import { BadgeMark } from "@/components/iam/BadgeMark";
+import { ThemeToggle } from "@/components/iam/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
-import { ApiError } from "@/api/client";
-import { Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { APP_NAME, pageTitle } from "@/lib/brand";
+import { DEMO } from "@/lib/demoFlag";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Sign in — IAM Console" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Sign in") }] }),
   component: LoginPage,
 });
 
+type Step = { kind: "password" } | { kind: "mfa"; challenge: string } | { kind: "enroll" };
+
 function LoginPage() {
-  const { login, isAuthenticated } = useAuth();
+  const { login, verifyMfa, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [step, setStep] = useState<Step>({ kind: "password" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [code, setCode] = useState("");
+  const [reveal, setReveal] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isAuthenticated) navigate({ to: "/me/access" });
+    if (isAuthenticated) void navigate({ to: "/admin/dashboard" });
   }, [isAuthenticated, navigate]);
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const run = async (e: FormEvent, fn: () => Promise<Awaited<ReturnType<typeof login>>>) => {
     e.preventDefault();
     setError(null);
     setPending(true);
     try {
-      const res = await login(email, password);
-      if (res.message) toast.success(res.message);
-      navigate({ to: "/me/access" });
+      const next = await fn();
+      if (next.next === "mfa") setStep({ kind: "mfa", challenge: next.challenge });
+      else if (next.next === "enroll") setStep({ kind: "enroll" });
+      // "done": the effect above navigates once the identity is set.
     } catch (err) {
-      let msg = "Sign-in failed. Please try again.";
-      if (err instanceof ApiError) {
-        // Prefer the server-provided message when available.
-        if (err.message) {
-          msg = err.message;
-        } else if (err.status === 401) {
-          msg = "Invalid email or password.";
-        } else if (err.status === 403) {
-          msg = "Your account is not permitted to sign in.";
-        }
-      }
-      setError(msg);
-      toast.error(msg);
+      setError(err instanceof ApiError ? err.message : "Couldn't reach the server. Try again.");
     } finally {
       setPending(false);
     }
   };
 
+  const restart = () => {
+    setStep({ kind: "password" });
+    setCode("");
+    setError(null);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--background)] px-4">
-      <div className="w-full max-w-sm rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
-        <div className="flex flex-col items-center text-center">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)]">
-            <ShieldCheck size={20} strokeWidth={2.5} />
-          </div>
-          <h1 className="mt-4 text-xl font-semibold tracking-tight">IAM Console</h1>
-          <p className="mt-1 text-sm text-[var(--muted-foreground)]">Sign in to continue</p>
-        </div>
-
-        <form onSubmit={onSubmit} className="mt-8 space-y-5">
-          <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-sm font-medium">
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="you@company.com"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="h-10"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-sm font-medium">
-              Password
-            </Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
-                placeholder="••••••••"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="h-10 pr-10"
+    <div className="flex min-h-dvh flex-col">
+      <header className="flex items-center justify-between px-4 py-3 sm:px-6">
+        <span className="flex items-center gap-2 text-[15px] font-semibold tracking-tight">
+          <BadgeMark className="size-5 text-[var(--primary)]" />
+          {APP_NAME}
+        </span>
+        <ThemeToggle />
+      </header>
+      <main className="flex flex-1 justify-center px-4 pt-6 pb-16 sm:pt-[min(10vh,96px)]">
+        <div className="w-full max-w-[400px]">
+          <div className="badge-shadow">
+            <div className="badge overflow-hidden rounded-[18px] bg-[var(--card)]">
+              <div
+                aria-hidden="true"
+                className={cn(
+                  "h-12 transition-colors duration-500 motion-reduce:transition-none",
+                  step.kind === "enroll"
+                    ? "bg-[var(--warning-subtle)]"
+                    : "bg-[var(--primary-subtle)]",
+                )}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-0 top-0 h-10 w-10 inline-flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-r-md"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+              <div className="px-6 pt-7 pb-7 sm:px-8 sm:pb-8">
+                {step.kind === "password" ? (
+                  <Panel title="Sign in" subtitle="Administrators and auditors only.">
+                    <form
+                      onSubmit={(e) => run(e, () => login(email.trim(), password))}
+                      className="grid gap-4"
+                    >
+                      <ErrorLine message={error} />
+                      <div className="grid gap-1.5">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          autoComplete="username"
+                          autoFocus
+                          required
+                          className="h-11"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                        />
+                      </div>
+                      <div className="grid gap-1.5">
+                        <Label htmlFor="password">Password</Label>
+                        <div className="relative">
+                          <Input
+                            id="password"
+                            type={reveal ? "text" : "password"}
+                            autoComplete="current-password"
+                            required
+                            className="h-11 pr-11"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setReveal((v) => !v)}
+                            aria-label={reveal ? "Hide password" : "Show password"}
+                            aria-pressed={reveal}
+                            className="absolute inset-y-0 right-0 grid w-11 place-items-center text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                          >
+                            {reveal ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                          </button>
+                        </div>
+                      </div>
+                      <Submit pending={pending}>Sign in</Submit>
+                    </form>
+                  </Panel>
+                ) : null}
+
+                {step.kind === "mfa" ? (
+                  <Panel
+                    title="Confirm it's you"
+                    subtitle="Enter the 6-digit code from your authenticator app, or a recovery code."
+                  >
+                    <form
+                      onSubmit={(e) => run(e, () => verifyMfa(step.challenge, code.trim()))}
+                      className="grid gap-4"
+                    >
+                      <ErrorLine message={error} />
+                      <div className="grid gap-1.5">
+                        <Label htmlFor="code">Verification code</Label>
+                        <Input
+                          id="code"
+                          autoComplete="one-time-code"
+                          autoFocus
+                          required
+                          className="h-11 text-center font-mono text-lg tracking-[0.3em]"
+                          value={code}
+                          onChange={(e) => setCode(e.target.value)}
+                        />
+                      </div>
+                      <Submit pending={pending}>Verify</Submit>
+                      <BackLink onClick={restart} />
+                    </form>
+                  </Panel>
+                ) : null}
+
+                {step.kind === "enroll" ? (
+                  <Panel
+                    title="Set up two-step verification first"
+                    subtitle="Your role requires a code from your phone at sign-in. Set it up on your organisation's sign-in page, then come back here."
+                  >
+                    <BackLink onClick={restart} />
+                  </Panel>
+                ) : null}
+              </div>
             </div>
           </div>
-
-          {error ? (
-            <div
-              className="rounded-md bg-[var(--destructive-subtle)] px-3 py-2 text-sm text-[var(--destructive)]"
-              role="alert"
-            >
-              {error}
-            </div>
+          {DEMO ? (
+            <p className="mt-8 rounded-lg border border-dashed border-[var(--input)] px-4 py-3 text-[13px] leading-relaxed text-[var(--muted-foreground)]">
+              <strong className="font-medium text-[var(--foreground)]">Demo.</strong> Nothing is
+              saved and any password works. Sign in as{" "}
+              <code className="font-mono text-[var(--foreground)]">admin@example.com</code>, or{" "}
+              <code className="font-mono text-[var(--foreground)]">auditor@example.com</code> for a
+              read-only view.
+            </p>
           ) : null}
-
-          <Button type="submit" disabled={pending} className="w-full h-10">
-            {pending ? "Signing in…" : "Sign in"}
-          </Button>
-        </form>
-      </div>
+        </div>
+      </main>
     </div>
+  );
+}
+
+function Panel({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: ReactNode;
+}) {
+  return (
+    <>
+      <h1 className="text-[26px] leading-[1.15] font-semibold tracking-[-0.02em] text-balance">
+        {title}
+      </h1>
+      {subtitle ? (
+        <p className="mt-2 text-[15px] leading-relaxed text-pretty text-[var(--muted-foreground)]">
+          {subtitle}
+        </p>
+      ) : null}
+      <div className="mt-6">{children}</div>
+    </>
+  );
+}
+
+function ErrorLine({ message }: { message: string | null }) {
+  return (
+    <div aria-live="polite" className="empty:hidden">
+      {message ? (
+        <p className="rounded-lg border border-[var(--destructive)]/30 bg-[var(--destructive-subtle)] px-3 py-2 text-[13.5px] text-[var(--destructive)]">
+          {message}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function Submit({ pending, children }: { pending: boolean; children: ReactNode }) {
+  return (
+    <Button
+      type="submit"
+      className="h-11 w-full text-[15px]"
+      disabled={pending}
+      aria-busy={pending || undefined}
+    >
+      {pending ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
+      {children}
+    </Button>
+  );
+}
+
+function BackLink({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="justify-self-start text-[13.5px] text-[var(--muted-foreground)] underline-offset-4 hover:text-[var(--foreground)] hover:underline"
+    >
+      Back to sign in
+    </button>
   );
 }

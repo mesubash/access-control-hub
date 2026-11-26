@@ -21,9 +21,10 @@ import { ConfirmDialog } from "@/components/iam/ConfirmDialog";
 import { Tag } from "@/components/iam/badges";
 import { cn } from "@/lib/utils";
 import { useAuthz } from "@/context/AuthzContext";
+import { pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/admin/scopes")({
-  head: () => ({ meta: [{ title: "Scopes — IAM Console" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Scopes") }] }),
   component: () => (
     <PermissionGuardedPage permission="platform.scope.read">
       <ScopesPage />
@@ -72,7 +73,7 @@ function ScopesPage() {
     <div>
       <PageHeader
         title="Scopes"
-        description="Hierarchical containers for roles, assignments and policies."
+        description="Your organisation as a tree, such as company, country, branch. Access given higher up flows down."
         actions={
           <Can permission="platform.scope.create">
             <Button onClick={() => setCreateOpen(true)}>New scope</Button>

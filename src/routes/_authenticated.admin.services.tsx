@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { servicesApi } from "@/api/resources";
 import type { ServiceRegistryEntry } from "@/api/types";
+import { When } from "@/components/iam/When";
 import { PageHeader } from "@/components/iam/PageHeader";
 import { DataTable, type Column } from "@/components/iam/DataTable";
 import { Button } from "@/components/ui/button";
@@ -18,9 +19,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/admin/services")({
-  head: () => ({ meta: [{ title: "Services — IAM Console" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Services") }] }),
   component: ServicesPage,
 });
 
@@ -42,14 +44,14 @@ function ServicesPage() {
     },
     { key: "dn", header: "Display name", render: (s) => s.displayName ?? "—" },
     { key: "dom", header: "Owned domains", render: (s) => s.ownedDomains?.join(", ") ?? "—" },
-    { key: "seen", header: "Last seen", render: (s) => formatDate(s.lastSeenAt) },
+    { key: "seen", header: "Last seen", render: (s) => <When at={s.lastSeenAt} /> },
   ];
 
   return (
     <div>
       <PageHeader
         title="Services"
-        description="Registered non-human clients of the IAM API."
+        description="Apps and backends that call this IAM with an API key, and the permission domains they own."
         actions={<Button onClick={() => setCreating(true)}>Register service</Button>}
       />
       <DataTable

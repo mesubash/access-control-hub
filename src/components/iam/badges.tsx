@@ -25,7 +25,7 @@ export function Tag({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium",
+        "inline-flex items-center rounded-md px-1.5 py-0.5 text-[12px] font-medium whitespace-nowrap",
         mono && "font-mono",
         tones[tone],
         className,
@@ -36,10 +36,27 @@ export function Tag({
   );
 }
 
-export function DecisionBadge({ decision }: { decision: "ALLOW" | "DENY" }) {
-  return <Tag tone={decision === "ALLOW" ? "success" : "destructive"}>{decision}</Tag>;
+/** spring-iam records a decision as a boolean: true = allowed. */
+export function DecisionBadge({ allowed }: { allowed: boolean }) {
+  return <Tag tone={allowed ? "success" : "destructive"}>{allowed ? "Allowed" : "Denied"}</Tag>;
+}
+
+const STATUS_TONE: Record<string, Tone> = {
+  ACTIVE: "success",
+  LOCKED: "warning",
+  SUSPENDED: "warning",
+  DEACTIVATED: "neutral",
+};
+
+export function StatusBadge({ status }: { status: string }) {
+  const label = status.charAt(0) + status.slice(1).toLowerCase();
+  return <Tag tone={STATUS_TONE[status] ?? "neutral"}>{label}</Tag>;
 }
 
 export function EnforcementBadge({ mode }: { mode: "ENFORCE" | "SHADOW" }) {
-  return <Tag tone={mode === "SHADOW" ? "warning" : "neutral"}>{mode}</Tag>;
+  return (
+    <Tag tone={mode === "SHADOW" ? "warning" : "neutral"}>
+      {mode === "SHADOW" ? "Shadow" : "Enforced"}
+    </Tag>
+  );
 }

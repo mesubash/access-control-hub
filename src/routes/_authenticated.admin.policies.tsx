@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/iam/PageHeader";
 import { PermissionGuardedPage } from "@/components/iam/PermissionGuardedPage";
 import { Can } from "@/components/iam/Can";
 import { DataTable, type Column } from "@/components/iam/DataTable";
-import { DecisionBadge, EnforcementBadge } from "@/components/iam/badges";
+import { EnforcementBadge, Tag } from "@/components/iam/badges";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,9 +20,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/admin/policies")({
-  head: () => ({ meta: [{ title: "Policies — IAM Console" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Policies") }] }),
   component: () => (
     <PermissionGuardedPage permission="platform.policy.read">
       <PoliciesPage />
@@ -38,9 +39,9 @@ function PoliciesPage() {
   const [toDelete, setToDelete] = useState<Policy | null>(null);
 
   const del = useMutation({
-    mutationFn: () => policiesApi.del(toDelete!.id),
+    mutationFn: () => policiesApi.deactivate(toDelete!.id),
     onSuccess: () => {
-      toast.success("Policy deleted");
+      toast.success("Policy turned off");
       qc.invalidateQueries({ queryKey: ["policies"] });
       setToDelete(null);
     },
@@ -48,12 +49,24 @@ function PoliciesPage() {
   });
 
   const columns: Column<Policy>[] = [
-    { key: "name", header: "Name", render: (p) => p.name },
+    {
+      key: "name",
+      header: "Name",
+      render: (p) => (
+        <span className={p.active === false ? "text-[var(--muted-foreground)]" : undefined}>
+          {p.name} {p.active === false ? <Tag>Off</Tag> : null}
+        </span>
+      ),
+    },
     {
       key: "effect",
       header: "Effect",
       width: "90px",
-      render: (p) => <DecisionBadge decision={p.effect} />,
+      render: (p) => (
+        <Tag tone={p.effect === "DENY" ? "destructive" : "success"}>
+          {p.effect === "DENY" ? "Deny" : "Allow"}
+        </Tag>
+      ),
     },
     {
       key: "mode",
@@ -74,7 +87,7 @@ function PoliciesPage() {
     <div>
       <PageHeader
         title="Policies"
-        description="Attribute-based rules evaluated after RBAC."
+        description="Rules on attributes like time, amount or location, checked after roles. Try them in shadow mode first."
         actions={
           <Can permission="platform.policy.create">
             <Button onClick={() => setCreating(true)}>New policy</Button>
@@ -131,7 +144,7 @@ function PolicyDialog({
 }) {
   const qc = useQueryClient();
   const [name, setName] = useState(policy?.name ?? "");
-  const [effect, setEffect] = useState<"ALLOW" | "DENY">(policy?.effect ?? "ALLOW");
+  const [effect, setEffect] = useState<string>(policy?.effect ?? "ALLOW");
   const [enforcementMode, setEnforcementMode] = useState<"ENFORCE" | "SHADOW">(
     policy?.enforcementMode ?? "SHADOW",
   );

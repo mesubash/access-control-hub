@@ -4,6 +4,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { denyRulesApi } from "@/api/resources";
 import type { DenyRule } from "@/api/types";
+import { SubjectLookup } from "@/components/iam/SubjectLookup";
+import { When } from "@/components/iam/When";
+import { Subject } from "@/components/iam/Subject";
 import { PageHeader } from "@/components/iam/PageHeader";
 import { PermissionGuardedPage } from "@/components/iam/PermissionGuardedPage";
 import { Can } from "@/components/iam/Can";
@@ -21,9 +24,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formatDate } from "@/lib/format";
+import { pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/admin/deny-rules")({
-  head: () => ({ meta: [{ title: "Deny Rules — IAM Console" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Deny rules") }] }),
   component: () => (
     <PermissionGuardedPage permission="platform.deny_rule.read">
       <DenyRulesPage />
@@ -32,7 +36,12 @@ export const Route = createFileRoute("/_authenticated/admin/deny-rules")({
 });
 
 function DenyRulesPage() {
-  const q = useQuery({ queryKey: ["denyRules"], queryFn: denyRulesApi.list });
+  const [subjectId, setSubjectId] = useState("");
+  const q = useQuery({
+    queryKey: ["denyRules", subjectId],
+    queryFn: () => denyRulesApi.forSubject(subjectId),
+    enabled: !!subjectId,
+  });
   const qc = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [toDelete, setToDelete] = useState<DenyRule | null>(null);
@@ -48,11 +57,11 @@ function DenyRulesPage() {
   });
 
   const columns: Column<DenyRule>[] = [
-    { key: "d", header: "", width: "70px", render: () => <Tag tone="destructive">DENY</Tag> },
+    { key: "d", header: "", width: "70px", render: () => <Tag tone="destructive">Deny</Tag> },
     {
       key: "sub",
       header: "Subject",
-      render: (r) => <span className="font-mono text-xs">{r.subjectId}</span>,
+      render: (r) => <Subject id={r.subjectId} />,
     },
     {
       key: "perm",
@@ -66,7 +75,7 @@ function DenyRulesPage() {
         r.scopeId ? <span className="font-mono text-xs">{r.scopeId}</span> : <Tag>Global</Tag>,
     },
     { key: "reason", header: "Reason", render: (r) => r.reason },
-    { key: "exp", header: "Expires", render: (r) => formatDate(r.expiresAt) },
+    { key: "exp", header: "Expires", render: (r) => <When at={r.expiresAt} /> },
     {
       key: "act",
       header: "",
@@ -89,8 +98,8 @@ function DenyRulesPage() {
   return (
     <div>
       <PageHeader
-        title="Deny Rules"
-        description="Explicit denies that override any allow. Use sparingly."
+        title="Deny rules"
+        description="Block one permission for one user, whatever their roles say. A deny always wins."
         actions={
           <Can permission="platform.deny_rule.create">
             <Button
@@ -102,11 +111,14 @@ function DenyRulesPage() {
           </Can>
         }
       />
+      <SubjectLookup label="Show deny rules" onSubmit={setSubjectId} />
       <DataTable
         columns={columns}
-        rows={q.data}
-        loading={q.isLoading}
-        empty="No deny rules."
+        rows={subjectId ? q.data : []}
+        loading={!!subjectId && q.isLoading}
+        empty={
+          subjectId ? "No deny rules for this user." : "Enter a user ID to see their deny rules."
+        }
         rowKey={(r) => r.id}
       />
       {createOpen ? <CreateDialog open onOpenChange={setCreateOpen} /> : null}

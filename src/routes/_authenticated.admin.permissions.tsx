@@ -8,9 +8,10 @@ import { PermissionGuardedPage } from "@/components/iam/PermissionGuardedPage";
 import { DataTable, type Column } from "@/components/iam/DataTable";
 import { Tag } from "@/components/iam/badges";
 import { Input } from "@/components/ui/input";
+import { pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/admin/permissions")({
-  head: () => ({ meta: [{ title: "Permissions — IAM Console" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Permissions") }] }),
   component: () => (
     <PermissionGuardedPage permission="platform.permission.read">
       <PermissionsPage />
@@ -40,7 +41,7 @@ function PermissionsPage() {
       key: "dep",
       header: "",
       width: "100px",
-      render: (p) => (p.deprecated ? <Tag tone="warning">Deprecated</Tag> : null),
+      render: (p) => (p.isDeprecated ? <Tag tone="warning">Deprecated</Tag> : null),
     },
   ];
 
@@ -48,11 +49,11 @@ function PermissionsPage() {
     <div>
       <PageHeader
         title="Permissions catalog"
-        description="Every permission the server recognises."
+        description="Every action an app can ask about, as domain.resource.action. Services register their own."
       />
       <div className="mb-3">
         <Input
-          placeholder="Filter permissions..."
+          placeholder="Filter permissions"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="max-w-xs"

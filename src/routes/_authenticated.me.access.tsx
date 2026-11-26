@@ -5,9 +5,10 @@ import { PageHeader } from "@/components/iam/PageHeader";
 import { DataTable, type Column } from "@/components/iam/DataTable";
 import { Tag } from "@/components/iam/badges";
 import { Input } from "@/components/ui/input";
+import { pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/me/access")({
-  head: () => ({ meta: [{ title: "My Access — IAM Console" }] }),
+  head: () => ({ meta: [{ title: pageTitle("My access") }] }),
   component: MyAccessPage,
 });
 
@@ -36,10 +37,7 @@ function MyAccessPage() {
 
   return (
     <div>
-      <PageHeader
-        title="My Access"
-        description="Permissions granted to you at the selected scope."
-      />
+      <PageHeader title="My access" description="What you can do in the scope picked at the top." />
       <div className="mb-3">
         <Input
           placeholder="Filter permissions..."

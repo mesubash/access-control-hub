@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { permissionsApi, rolesApi } from "@/api/resources";
 import type { Permission, Role } from "@/api/types";
@@ -19,9 +19,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/admin/roles")({
-  head: () => ({ meta: [{ title: "Roles — IAM Console" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Roles") }] }),
   component: () => (
     <PermissionGuardedPage permission="platform.role.read">
       <RolesPage />
@@ -62,7 +63,7 @@ function RolesPage() {
       key: "system",
       header: "",
       width: "80px",
-      render: (r) => (r.systemRole ? <Tag>System</Tag> : null),
+      render: (r) => (r.isSystemRole ? <Tag>System</Tag> : null),
     },
   ];
 
@@ -70,7 +71,7 @@ function RolesPage() {
     <div>
       <PageHeader
         title="Roles"
-        description="Named bundles of permissions granted within a scope."
+        description="Bundles of permissions you hand out together. Give them to people on the Assignments page."
         actions={
           <Can permission="platform.role.create">
             <Button onClick={() => setCreateOpen(true)}>New role</Button>
@@ -79,7 +80,7 @@ function RolesPage() {
       />
       <div className="mb-3">
         <Input
-          placeholder="Filter roles..."
+          placeholder="Filter roles"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="max-w-xs"
@@ -115,9 +116,18 @@ function RoleDialog({
   const [name, setName] = useState(role?.name ?? "");
   const [displayName, setDisplayName] = useState(role?.displayName ?? "");
   const [description, setDescription] = useState(role?.description ?? "");
-  const [selected, setSelected] = useState<Set<string>>(new Set(role?.permissionIds ?? []));
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  // spring-iam returns a role's permissions from their own endpoint.
+  const rolePermsQ = useQuery({
+    queryKey: ["role-permissions", role?.id],
+    queryFn: () => rolesApi.permissions(role!.id),
+    enabled: !!role,
+  });
+  useEffect(() => {
+    if (rolePermsQ.data) setSelected(new Set(rolePermsQ.data.map((p) => p.id)));
+  }, [rolePermsQ.data]);
   const [filter, setFilter] = useState("");
-  const readOnly = role?.systemRole;
+  const readOnly = role?.isSystemRole;
 
   const create = useMutation({
     mutationFn: () =>
