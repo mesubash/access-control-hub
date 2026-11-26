@@ -7,7 +7,7 @@
 The admin console for [spring-iam](https://github.com/mesubash/spring-iam).<br />
 Manage users, roles, scopes and policies, read the audit log, and see exactly why a request was allowed or denied.
 
-[![Live demo](https://img.shields.io/badge/live_demo-access--control--hub.vercel.app-2c4fb8?style=flat-square&logo=vercel&logoColor=white)](https://access-control-hub.vercel.app)
+[![Live demo](https://img.shields.io/badge/live_demo-access--control--console.vercel.app-2c4fb8?style=flat-square&logo=vercel&logoColor=white)](https://access-control-console.vercel.app)
 [![CI](https://img.shields.io/github/actions/workflow/status/mesubash/access-control-hub/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/mesubash/access-control-hub/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/github/license/mesubash/access-control-hub?style=flat-square)](LICENSE)
 [![Backend: spring-iam](https://img.shields.io/badge/backend-spring--iam-6DB33F?style=flat-square&logo=springboot&logoColor=white)](https://github.com/mesubash/spring-iam)
@@ -21,7 +21,7 @@ Manage users, roles, scopes and policies, read the audit log, and see exactly wh
 </div>
 
 > [!TIP]
-> **Try it in ten seconds:** open the [live demo](https://access-control-hub.vercel.app). There's no backend and any password works.
+> **Try it in ten seconds:** open the [live demo](https://access-control-console.vercel.app). There's no backend and any password works.
 > Sign in as `admin@example.com` for full access, or `auditor@example.com` to see the read-only view.
 
 ## The spring-iam family
