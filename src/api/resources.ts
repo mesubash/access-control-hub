@@ -125,17 +125,6 @@ export const assignmentsApi = {
   revoke: (id: string, reason: string) => api.del(`/api/v1/assignments/${id}`, { reason }),
 };
 
-export const breakGlassApi = {
-  grant: (input: {
-    subjectId: string;
-    roleId: string;
-    scopeId: string;
-    durationMinutes: number;
-    reason: string;
-    referenceId?: string;
-  }) => api.post<Assignment>("/api/v1/break-glass", input),
-};
-
 /* ------------------------------ Deny Rules ------------------------------ */
 
 export const denyRulesApi = {
