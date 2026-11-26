@@ -49,9 +49,22 @@ function DenyRulesPage() {
 
   const columns: Column<DenyRule>[] = [
     { key: "d", header: "", width: "70px", render: () => <Tag tone="destructive">DENY</Tag> },
-    { key: "sub", header: "Subject", render: (r) => <span className="font-mono text-xs">{r.subjectId}</span> },
-    { key: "perm", header: "Permission", render: (r) => <span className="font-mono text-xs">{r.permissionKey}</span> },
-    { key: "scope", header: "Scope", render: (r) => (r.scopeId ? <span className="font-mono text-xs">{r.scopeId}</span> : <Tag>Global</Tag>) },
+    {
+      key: "sub",
+      header: "Subject",
+      render: (r) => <span className="font-mono text-xs">{r.subjectId}</span>,
+    },
+    {
+      key: "perm",
+      header: "Permission",
+      render: (r) => <span className="font-mono text-xs">{r.permissionKey}</span>,
+    },
+    {
+      key: "scope",
+      header: "Scope",
+      render: (r) =>
+        r.scopeId ? <span className="font-mono text-xs">{r.scopeId}</span> : <Tag>Global</Tag>,
+    },
     { key: "reason", header: "Reason", render: (r) => r.reason },
     { key: "exp", header: "Expires", render: (r) => formatDate(r.expiresAt) },
     {
@@ -60,7 +73,12 @@ function DenyRulesPage() {
       width: "100px",
       render: (r) => (
         <Can permission="platform.deny_rule.delete">
-          <Button variant="ghost" size="sm" style={{ color: "var(--destructive)" }} onClick={() => setToDelete(r)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            style={{ color: "var(--destructive)" }}
+            onClick={() => setToDelete(r)}
+          >
             Remove
           </Button>
         </Can>
@@ -75,7 +93,10 @@ function DenyRulesPage() {
         description="Explicit denies that override any allow. Use sparingly."
         actions={
           <Can permission="platform.deny_rule.create">
-            <Button style={{ backgroundColor: "var(--destructive)", color: "#fff" }} onClick={() => setCreateOpen(true)}>
+            <Button
+              style={{ backgroundColor: "var(--destructive)", color: "#fff" }}
+              onClick={() => setCreateOpen(true)}
+            >
               New deny rule
             </Button>
           </Can>
@@ -104,7 +125,13 @@ function DenyRulesPage() {
   );
 }
 
-function CreateDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+function CreateDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const qc = useQueryClient();
   const [subjectId, setSubjectId] = useState("");
   const [subjectType, setSubjectType] = useState("USER");
@@ -134,7 +161,9 @@ function CreateDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader><DialogTitle>New deny rule</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>New deny rule</DialogTitle>
+        </DialogHeader>
         <div className="space-y-2">
           <Label htmlFor="d-sub">Subject ID</Label>
           <Input id="d-sub" value={subjectId} onChange={(e) => setSubjectId(e.target.value)} />
@@ -150,7 +179,11 @@ function CreateDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
             <option value="SERVICE">SERVICE</option>
           </select>
           <Label htmlFor="d-perm">Permission key (supports * and **)</Label>
-          <Input id="d-perm" value={permissionKey} onChange={(e) => setPermissionKey(e.target.value)} />
+          <Input
+            id="d-perm"
+            value={permissionKey}
+            onChange={(e) => setPermissionKey(e.target.value)}
+          />
           <Label htmlFor="d-scope">Scope ID (optional)</Label>
           <Input id="d-scope" value={scopeId} onChange={(e) => setScopeId(e.target.value)} />
           <Label htmlFor="d-reason">Reason (required)</Label>
@@ -161,7 +194,9 @@ function CreateDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
           <Input id="d-exp" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button
             style={{ backgroundColor: "var(--destructive)", color: "#fff" }}
             onClick={() => m.mutate()}

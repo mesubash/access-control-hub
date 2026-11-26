@@ -52,7 +52,9 @@ export function ConfirmDialog({
           <Button
             onClick={onConfirm}
             disabled={pending}
-            style={destructive ? { backgroundColor: "var(--destructive)", color: "#fff" } : undefined}
+            style={
+              destructive ? { backgroundColor: "var(--destructive)", color: "#fff" } : undefined
+            }
           >
             {pending ? "Working..." : confirmLabel}
           </Button>

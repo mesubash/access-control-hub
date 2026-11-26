@@ -58,8 +58,16 @@ function ResourceGrantsPage() {
   }
 
   const columns: Column<ResourceGrant>[] = [
-    { key: "sub", header: "Subject", render: (r) => <span className="font-mono text-xs">{r.subjectId}</span> },
-    { key: "perm", header: "Permission", render: (r) => <span className="font-mono text-xs">{r.permissionKey}</span> },
+    {
+      key: "sub",
+      header: "Subject",
+      render: (r) => <span className="font-mono text-xs">{r.subjectId}</span>,
+    },
+    {
+      key: "perm",
+      header: "Permission",
+      render: (r) => <span className="font-mono text-xs">{r.permissionKey}</span>,
+    },
     { key: "rt", header: "Resource", render: (r) => `${r.resourceType}:${r.resourceId}` },
     { key: "exp", header: "Expires", render: (r) => formatDate(r.expiresAt) },
     {
@@ -67,7 +75,12 @@ function ResourceGrantsPage() {
       header: "",
       width: "100px",
       render: (r) => (
-        <Button variant="ghost" size="sm" style={{ color: "var(--destructive)" }} onClick={() => setToDelete(r)}>
+        <Button
+          variant="ghost"
+          size="sm"
+          style={{ color: "var(--destructive)" }}
+          onClick={() => setToDelete(r)}
+        >
           Revoke
         </Button>
       ),
@@ -82,17 +95,39 @@ function ResourceGrantsPage() {
         actions={<Button onClick={() => setCreating(true)}>New grant</Button>}
       />
       <div className="mb-3 flex gap-2">
-        <Input placeholder="Subject ID" value={subjectId} onChange={(e) => setSubjectId(e.target.value)} />
-        <Input placeholder="Resource type" value={resourceType} onChange={(e) => setResourceType(e.target.value)} />
-        <Input placeholder="Resource ID" value={resourceId} onChange={(e) => setResourceId(e.target.value)} />
+        <Input
+          placeholder="Subject ID"
+          value={subjectId}
+          onChange={(e) => setSubjectId(e.target.value)}
+        />
+        <Input
+          placeholder="Resource type"
+          value={resourceType}
+          onChange={(e) => setResourceType(e.target.value)}
+        />
+        <Input
+          placeholder="Resource ID"
+          value={resourceId}
+          onChange={(e) => setResourceId(e.target.value)}
+        />
       </div>
-      <DataTable columns={columns} rows={q.data} loading={q.isLoading} empty="No grants." rowKey={(r) => r.id} />
+      <DataTable
+        columns={columns}
+        rows={q.data}
+        loading={q.isLoading}
+        empty="No grants."
+        rowKey={(r) => r.id}
+      />
       {creating ? <CreateDialog open onOpenChange={setCreating} /> : null}
       <ConfirmDialog
         open={!!toDelete}
         onOpenChange={(v) => !v && setToDelete(null)}
         title="Revoke resource grant"
-        target={toDelete ? `${toDelete.permissionKey} → ${toDelete.resourceType}:${toDelete.resourceId}` : undefined}
+        target={
+          toDelete
+            ? `${toDelete.permissionKey} → ${toDelete.resourceType}:${toDelete.resourceId}`
+            : undefined
+        }
         destructive
         confirmLabel="Revoke"
         pending={del.isPending}
@@ -102,7 +137,13 @@ function ResourceGrantsPage() {
   );
 }
 
-function CreateDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+function CreateDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const qc = useQueryClient();
   const [subjectId, setSubjectId] = useState("");
   const [permissionKey, setPermissionKey] = useState("");
@@ -130,7 +171,9 @@ function CreateDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader><DialogTitle>New resource grant</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>New resource grant</DialogTitle>
+        </DialogHeader>
         <div className="space-y-2">
           <Label>Subject ID</Label>
           <Input value={subjectId} onChange={(e) => setSubjectId(e.target.value)} />
@@ -146,8 +189,13 @@ function CreateDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
           <Input value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => m.mutate()} disabled={m.isPending || !subjectId || !permissionKey || !resourceType || !resourceId}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => m.mutate()}
+            disabled={m.isPending || !subjectId || !permissionKey || !resourceType || !resourceId}
+          >
             {m.isPending ? "Creating..." : "Create"}
           </Button>
         </DialogFooter>

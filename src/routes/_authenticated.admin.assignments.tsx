@@ -54,12 +54,21 @@ function AssignmentsPage() {
   });
 
   const columns: Column<Assignment>[] = [
-    { key: "subject", header: "Subject", render: (a) => <span className="font-mono text-xs">{a.subjectId}</span> },
-    { key: "role", header: "Role", render: (a) => a.roleName ?? <span className="font-mono text-xs">{a.roleId}</span> },
+    {
+      key: "subject",
+      header: "Subject",
+      render: (a) => <span className="font-mono text-xs">{a.subjectId}</span>,
+    },
+    {
+      key: "role",
+      header: "Role",
+      render: (a) => a.roleName ?? <span className="font-mono text-xs">{a.roleId}</span>,
+    },
     {
       key: "scope",
       header: "Scope",
-      render: (a) => (a.scopePath ? <span className="font-mono text-xs">{a.scopePath}</span> : <Tag>Global</Tag>),
+      render: (a) =>
+        a.scopePath ? <span className="font-mono text-xs">{a.scopePath}</span> : <Tag>Global</Tag>,
     },
     {
       key: "expires",
@@ -73,14 +82,24 @@ function AssignmentsPage() {
           "—"
         ),
     },
-    { key: "origin", header: "Origin", width: "110px", render: (a) => <Tag>{a.origin ?? "direct"}</Tag> },
+    {
+      key: "origin",
+      header: "Origin",
+      width: "110px",
+      render: (a) => <Tag>{a.origin ?? "direct"}</Tag>,
+    },
     {
       key: "actions",
       header: "",
       width: "100px",
       render: (a) => (
         <Can permission="platform.assignment.revoke">
-          <Button variant="ghost" size="sm" style={{ color: "var(--destructive)" }} onClick={() => setRevoking(a)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            style={{ color: "var(--destructive)" }}
+            onClick={() => setRevoking(a)}
+          >
             Revoke
           </Button>
         </Can>
@@ -120,7 +139,9 @@ function AssignmentsPage() {
         onOpenChange={(v) => !v && setRevoking(null)}
         title="Revoke assignment"
         description="A reason is required for the audit trail."
-        target={revoking ? `${revoking.roleName ?? revoking.roleId} → ${revoking.subjectId}` : undefined}
+        target={
+          revoking ? `${revoking.roleName ?? revoking.roleId} → ${revoking.subjectId}` : undefined
+        }
         confirmLabel="Revoke"
         destructive
         pending={revoke.isPending}
@@ -135,7 +156,13 @@ function AssignmentsPage() {
   );
 }
 
-function GrantDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+function GrantDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const qc = useQueryClient();
   const rolesQ = useQuery({ queryKey: ["roles"], queryFn: rolesApi.list });
   const [subjectId, setSubjectId] = useState("");
@@ -210,7 +237,12 @@ function GrantDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
           <Label htmlFor="a-scope">Scope ID (optional)</Label>
           <Input id="a-scope" value={scopeId} onChange={(e) => setScopeId(e.target.value)} />
           <Label htmlFor="a-exp">Expires at (ISO, optional)</Label>
-          <Input id="a-exp" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} placeholder="2026-12-31T00:00:00Z" />
+          <Input
+            id="a-exp"
+            value={expiresAt}
+            onChange={(e) => setExpiresAt(e.target.value)}
+            placeholder="2026-12-31T00:00:00Z"
+          />
           <Label htmlFor="a-cond">Conditions JSON (optional)</Label>
           <textarea
             id="a-cond"
@@ -222,7 +254,9 @@ function GrantDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
           {err ? <p className="text-sm text-[var(--destructive)]">{err}</p> : null}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button onClick={() => m.mutate()} disabled={m.isPending || !subjectId || !roleId}>
             {m.isPending ? "Granting..." : "Grant"}
           </Button>

@@ -35,7 +35,11 @@ function ServicesPage() {
   }
 
   const columns: Column<ServiceRegistryEntry>[] = [
-    { key: "name", header: "Name", render: (s) => <span className="font-mono text-[13px]">{s.name}</span> },
+    {
+      key: "name",
+      header: "Name",
+      render: (s) => <span className="font-mono text-[13px]">{s.name}</span>,
+    },
     { key: "dn", header: "Display name", render: (s) => s.displayName ?? "—" },
     { key: "dom", header: "Owned domains", render: (s) => s.ownedDomains?.join(", ") ?? "—" },
     { key: "seen", header: "Last seen", render: (s) => formatDate(s.lastSeenAt) },
@@ -48,7 +52,13 @@ function ServicesPage() {
         description="Registered non-human clients of the IAM API."
         actions={<Button onClick={() => setCreating(true)}>Register service</Button>}
       />
-      <DataTable columns={columns} rows={q.data} loading={q.isLoading} empty="No services." rowKey={(s) => s.id} />
+      <DataTable
+        columns={columns}
+        rows={q.data}
+        loading={q.isLoading}
+        empty="No services."
+        rowKey={(s) => s.id}
+      />
       {creating ? (
         <RegisterDialog
           open
@@ -108,7 +118,10 @@ function RegisterDialog({
       servicesApi.create({
         name,
         displayName,
-        ownedDomains: domains.split(",").map((d) => d.trim()).filter(Boolean),
+        ownedDomains: domains
+          .split(",")
+          .map((d) => d.trim())
+          .filter(Boolean),
       }),
     onSuccess: (res) => {
       toast.success("Service registered");
@@ -120,7 +133,9 @@ function RegisterDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader><DialogTitle>Register service</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Register service</DialogTitle>
+        </DialogHeader>
         <div className="space-y-2">
           <Label>Name</Label>
           <Input value={name} onChange={(e) => setName(e.target.value)} />
@@ -130,7 +145,9 @@ function RegisterDialog({
           <Input value={domains} onChange={(e) => setDomains(e.target.value)} />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button onClick={() => m.mutate()} disabled={m.isPending || !name}>
             {m.isPending ? "Registering..." : "Register"}
           </Button>

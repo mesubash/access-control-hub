@@ -50,15 +50,33 @@ function SecurityPage() {
         <h2 className="text-sm font-semibold">Change password</h2>
         <div className="space-y-1.5">
           <Label htmlFor="cur">Current password</Label>
-          <Input id="cur" type="password" value={current} onChange={(e) => setCurrent(e.target.value)} required />
+          <Input
+            id="cur"
+            type="password"
+            value={current}
+            onChange={(e) => setCurrent(e.target.value)}
+            required
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="new">New password</Label>
-          <Input id="new" type="password" value={next} onChange={(e) => setNext(e.target.value)} required />
+          <Input
+            id="new"
+            type="password"
+            value={next}
+            onChange={(e) => setNext(e.target.value)}
+            required
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="conf">Confirm new password</Label>
-          <Input id="conf" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
+          <Input
+            id="conf"
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            required
+          />
         </div>
         {err ? <p className="text-sm text-[var(--destructive)]">{err}</p> : null}
         <Button type="submit" disabled={m.isPending}>

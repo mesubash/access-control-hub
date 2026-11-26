@@ -42,14 +42,28 @@ function RolesPage() {
   }, [q.data, filter]);
 
   const columns: Column<Role>[] = [
-    { key: "name", header: "Name", render: (r) => <span className="font-mono text-[13px]">{r.name}</span> },
+    {
+      key: "name",
+      header: "Name",
+      render: (r) => <span className="font-mono text-[13px]">{r.name}</span>,
+    },
     { key: "display", header: "Display name", render: (r) => r.displayName ?? "—" },
     {
       key: "scope",
       header: "Scope",
-      render: (r) => (r.ownerScopeId ? <span className="font-mono text-xs">{r.ownerScopeId}</span> : <Tag>Global</Tag>),
+      render: (r) =>
+        r.ownerScopeId ? (
+          <span className="font-mono text-xs">{r.ownerScopeId}</span>
+        ) : (
+          <Tag>Global</Tag>
+        ),
     },
-    { key: "system", header: "", width: "80px", render: (r) => (r.systemRole ? <Tag>System</Tag> : null) },
+    {
+      key: "system",
+      header: "",
+      width: "80px",
+      render: (r) => (r.systemRole ? <Tag>System</Tag> : null),
+    },
   ];
 
   return (
@@ -162,15 +176,34 @@ function RoleDialog({
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="r-name">Name</Label>
-            <Input id="r-name" value={name} disabled={!!role} onChange={(e) => setName(e.target.value)} />
+            <Input
+              id="r-name"
+              value={name}
+              disabled={!!role}
+              onChange={(e) => setName(e.target.value)}
+            />
             <Label htmlFor="r-dn">Display name</Label>
-            <Input id="r-dn" value={displayName} disabled={readOnly} onChange={(e) => setDisplayName(e.target.value)} />
+            <Input
+              id="r-dn"
+              value={displayName}
+              disabled={readOnly}
+              onChange={(e) => setDisplayName(e.target.value)}
+            />
             <Label htmlFor="r-desc">Description</Label>
-            <Input id="r-desc" value={description} disabled={readOnly} onChange={(e) => setDescription(e.target.value)} />
+            <Input
+              id="r-desc"
+              value={description}
+              disabled={readOnly}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label>Permissions ({selected.size} selected)</Label>
-            <Input placeholder="Search permissions..." value={filter} onChange={(e) => setFilter(e.target.value)} />
+            <Input
+              placeholder="Search permissions..."
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            />
             <div className="h-64 overflow-y-auto rounded border border-[var(--border)] p-2 text-sm">
               {permsQ.isLoading ? "Loading..." : null}
               {grouped.map(([domain, perms]) => (
@@ -195,7 +228,9 @@ function RoleDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
           {readOnly ? null : role ? (
             <Button onClick={() => update.mutate()} disabled={update.isPending}>
               {update.isPending ? "Saving..." : "Save permissions"}

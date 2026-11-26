@@ -28,20 +28,43 @@ function PermissionsPage() {
   }, [q.data, filter]);
 
   const columns: Column<Permission>[] = [
-    { key: "key", header: "Key", render: (p) => <span className="font-mono text-[13px]">{p.key}</span> },
+    {
+      key: "key",
+      header: "Key",
+      render: (p) => <span className="font-mono text-[13px]">{p.key}</span>,
+    },
     { key: "d", header: "Domain", render: (p) => p.domain ?? p.key.split(".")[0] },
     { key: "r", header: "Resource", render: (p) => p.resource ?? "—" },
     { key: "a", header: "Action", render: (p) => p.action ?? "—" },
-    { key: "dep", header: "", width: "100px", render: (p) => (p.deprecated ? <Tag tone="warning">Deprecated</Tag> : null) },
+    {
+      key: "dep",
+      header: "",
+      width: "100px",
+      render: (p) => (p.deprecated ? <Tag tone="warning">Deprecated</Tag> : null),
+    },
   ];
 
   return (
     <div>
-      <PageHeader title="Permissions catalog" description="Every permission the server recognises." />
+      <PageHeader
+        title="Permissions catalog"
+        description="Every permission the server recognises."
+      />
       <div className="mb-3">
-        <Input placeholder="Filter permissions..." value={filter} onChange={(e) => setFilter(e.target.value)} className="max-w-xs" />
+        <Input
+          placeholder="Filter permissions..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="max-w-xs"
+        />
       </div>
-      <DataTable columns={columns} rows={rows} loading={q.isLoading} empty="No permissions." rowKey={(p) => p.id} />
+      <DataTable
+        columns={columns}
+        rows={rows}
+        loading={q.isLoading}
+        empty="No permissions."
+        rowKey={(p) => p.id}
+      />
     </div>
   );
 }

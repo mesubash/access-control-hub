@@ -49,7 +49,10 @@ function ExplainPage() {
 
   return (
     <div>
-      <PageHeader title="Explain" description="Walk through how the server would decide an authorization request." />
+      <PageHeader
+        title="Explain"
+        description="Walk through how the server would decide an authorization request."
+      />
       <div className="grid grid-cols-[360px_1fr] gap-4">
         <form
           onSubmit={(e) => {
@@ -84,14 +87,20 @@ function ExplainPage() {
             className="w-full rounded border border-[var(--border)] bg-[var(--card)] p-2 font-mono text-xs"
           />
           {jsonErr ? <p className="text-xs text-[var(--destructive)]">{jsonErr}</p> : null}
-          <Button type="submit" disabled={m.isPending || !subjectId || !permission || !!jsonErr} className="w-full">
+          <Button
+            type="submit"
+            disabled={m.isPending || !subjectId || !permission || !!jsonErr}
+            className="w-full"
+          >
             {m.isPending ? "Explaining..." : "Explain"}
           </Button>
         </form>
 
         <div className="rounded border border-[var(--border)] bg-[var(--card)] p-4">
           {!result ? (
-            <p className="text-sm text-[var(--muted-foreground)]">Submit a request to see the pipeline trace.</p>
+            <p className="text-sm text-[var(--muted-foreground)]">
+              Submit a request to see the pipeline trace.
+            </p>
           ) : (
             <div>
               <div className="mb-4 flex items-center gap-2">
@@ -109,20 +118,29 @@ function ExplainPage() {
                         : "border-[var(--destructive)]/30 bg-[var(--destructive-subtle)]",
                     )}
                   >
-                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-semibold" aria-hidden>
+                    <div
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-semibold"
+                      aria-hidden
+                    >
                       {i + 1}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold">{step.stage}</span>
-                        <Tag tone={step.passed ? "success" : "destructive"}>{step.passed ? "PASS" : "FAIL"}</Tag>
+                        <Tag tone={step.passed ? "success" : "destructive"}>
+                          {step.passed ? "PASS" : "FAIL"}
+                        </Tag>
                         {step.decision ? <Tag>{step.decision}</Tag> : null}
                       </div>
                       {step.rule ? (
-                        <div className="mt-1 font-mono text-xs text-[var(--foreground)]">{step.rule}</div>
+                        <div className="mt-1 font-mono text-xs text-[var(--foreground)]">
+                          {step.rule}
+                        </div>
                       ) : null}
                       {step.detail ? (
-                        <div className="mt-1 text-xs text-[var(--muted-foreground)]">{step.detail}</div>
+                        <div className="mt-1 text-xs text-[var(--muted-foreground)]">
+                          {step.detail}
+                        </div>
                       ) : null}
                       {step.data ? (
                         <pre className="mt-2 max-h-40 overflow-auto rounded bg-[var(--card)] p-2 text-[11px]">

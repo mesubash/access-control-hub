@@ -78,13 +78,17 @@ export function DataTable<T>({
                 }
                 className={cn(
                   "border-b border-[var(--border)] last:border-b-0",
-                  onRowClick && "cursor-pointer hover:bg-[var(--background)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)]",
+                  onRowClick &&
+                    "cursor-pointer hover:bg-[var(--background)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)]",
                 )}
               >
                 {columns.map((c) => (
                   <td
                     key={c.key}
-                    className={cn("h-10 px-3 py-2 align-middle text-[var(--foreground)]", c.className)}
+                    className={cn(
+                      "h-10 px-3 py-2 align-middle text-[var(--foreground)]",
+                      c.className,
+                    )}
                   >
                     {c.render(r)}
                   </td>

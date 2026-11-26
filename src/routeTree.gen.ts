@@ -9,99 +9,54 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedMeSessionsRouteImport } from './routes/_authenticated.me.sessions'
-import { Route as AuthenticatedMeSecurityRouteImport } from './routes/_authenticated.me.security'
-import { Route as AuthenticatedMeAccessRouteImport } from './routes/_authenticated.me.access'
-import { Route as AuthenticatedAdminServicesRouteImport } from './routes/_authenticated.admin.services'
-import { Route as AuthenticatedAdminScopesRouteImport } from './routes/_authenticated.admin.scopes'
-import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated.admin.roles'
-import { Route as AuthenticatedAdminResourceGrantsRouteImport } from './routes/_authenticated.admin.resource-grants'
-import { Route as AuthenticatedAdminPoliciesRouteImport } from './routes/_authenticated.admin.policies'
-import { Route as AuthenticatedAdminPermissionsRouteImport } from './routes/_authenticated.admin.permissions'
-import { Route as AuthenticatedAdminGroupsRouteImport } from './routes/_authenticated.admin.groups'
-import { Route as AuthenticatedAdminExplainRouteImport } from './routes/_authenticated.admin.explain'
-import { Route as AuthenticatedAdminDenyRulesRouteImport } from './routes/_authenticated.admin.deny-rules'
-import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated.admin.dashboard'
-import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated.admin.audit'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedAdminAssignmentsRouteImport } from './routes/_authenticated.admin.assignments'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated.admin.audit'
+import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated.admin.dashboard'
+import { Route as AuthenticatedAdminDenyRulesRouteImport } from './routes/_authenticated.admin.deny-rules'
+import { Route as AuthenticatedAdminExplainRouteImport } from './routes/_authenticated.admin.explain'
+import { Route as AuthenticatedAdminGroupsRouteImport } from './routes/_authenticated.admin.groups'
+import { Route as AuthenticatedAdminPermissionsRouteImport } from './routes/_authenticated.admin.permissions'
+import { Route as AuthenticatedAdminPoliciesRouteImport } from './routes/_authenticated.admin.policies'
+import { Route as AuthenticatedAdminResourceGrantsRouteImport } from './routes/_authenticated.admin.resource-grants'
+import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated.admin.roles'
+import { Route as AuthenticatedAdminScopesRouteImport } from './routes/_authenticated.admin.scopes'
+import { Route as AuthenticatedAdminServicesRouteImport } from './routes/_authenticated.admin.services'
+import { Route as AuthenticatedMeAccessRouteImport } from './routes/_authenticated.me.access'
+import { Route as AuthenticatedMeSecurityRouteImport } from './routes/_authenticated.me.security'
+import { Route as AuthenticatedMeSessionsRouteImport } from './routes/_authenticated.me.sessions'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedMeSessionsRoute = AuthenticatedMeSessionsRouteImport.update({
-  id: '/me/sessions',
-  path: '/me/sessions',
+const AuthenticatedAdminAssignmentsRoute =
+  AuthenticatedAdminAssignmentsRouteImport.update({
+    id: '/admin/assignments',
+    path: '/admin/assignments',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/admin/audit',
+  path: '/admin/audit',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedMeSecurityRoute = AuthenticatedMeSecurityRouteImport.update({
-  id: '/me/security',
-  path: '/me/security',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedMeAccessRoute = AuthenticatedMeAccessRouteImport.update({
-  id: '/me/access',
-  path: '/me/access',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAdminServicesRoute =
-  AuthenticatedAdminServicesRouteImport.update({
-    id: '/admin/services',
-    path: '/admin/services',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedAdminScopesRoute =
-  AuthenticatedAdminScopesRouteImport.update({
-    id: '/admin/scopes',
-    path: '/admin/scopes',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedAdminRolesRoute = AuthenticatedAdminRolesRouteImport.update({
-  id: '/admin/roles',
-  path: '/admin/roles',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAdminResourceGrantsRoute =
-  AuthenticatedAdminResourceGrantsRouteImport.update({
-    id: '/admin/resource-grants',
-    path: '/admin/resource-grants',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedAdminPoliciesRoute =
-  AuthenticatedAdminPoliciesRouteImport.update({
-    id: '/admin/policies',
-    path: '/admin/policies',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedAdminPermissionsRoute =
-  AuthenticatedAdminPermissionsRouteImport.update({
-    id: '/admin/permissions',
-    path: '/admin/permissions',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedAdminGroupsRoute =
-  AuthenticatedAdminGroupsRouteImport.update({
-    id: '/admin/groups',
-    path: '/admin/groups',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedAdminExplainRoute =
-  AuthenticatedAdminExplainRouteImport.update({
-    id: '/admin/explain',
-    path: '/admin/explain',
+const AuthenticatedAdminDashboardRoute =
+  AuthenticatedAdminDashboardRouteImport.update({
+    id: '/admin/dashboard',
+    path: '/admin/dashboard',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedAdminDenyRulesRoute =
@@ -110,23 +65,68 @@ const AuthenticatedAdminDenyRulesRoute =
     path: '/admin/deny-rules',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedAdminDashboardRoute =
-  AuthenticatedAdminDashboardRouteImport.update({
-    id: '/admin/dashboard',
-    path: '/admin/dashboard',
+const AuthenticatedAdminExplainRoute =
+  AuthenticatedAdminExplainRouteImport.update({
+    id: '/admin/explain',
+    path: '/admin/explain',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
-  id: '/admin/audit',
-  path: '/admin/audit',
+const AuthenticatedAdminGroupsRoute =
+  AuthenticatedAdminGroupsRouteImport.update({
+    id: '/admin/groups',
+    path: '/admin/groups',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAdminPermissionsRoute =
+  AuthenticatedAdminPermissionsRouteImport.update({
+    id: '/admin/permissions',
+    path: '/admin/permissions',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAdminPoliciesRoute =
+  AuthenticatedAdminPoliciesRouteImport.update({
+    id: '/admin/policies',
+    path: '/admin/policies',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAdminResourceGrantsRoute =
+  AuthenticatedAdminResourceGrantsRouteImport.update({
+    id: '/admin/resource-grants',
+    path: '/admin/resource-grants',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAdminRolesRoute = AuthenticatedAdminRolesRouteImport.update({
+  id: '/admin/roles',
+  path: '/admin/roles',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedAdminAssignmentsRoute =
-  AuthenticatedAdminAssignmentsRouteImport.update({
-    id: '/admin/assignments',
-    path: '/admin/assignments',
+const AuthenticatedAdminScopesRoute =
+  AuthenticatedAdminScopesRouteImport.update({
+    id: '/admin/scopes',
+    path: '/admin/scopes',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAdminServicesRoute =
+  AuthenticatedAdminServicesRouteImport.update({
+    id: '/admin/services',
+    path: '/admin/services',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMeAccessRoute = AuthenticatedMeAccessRouteImport.update({
+  id: '/me/access',
+  path: '/me/access',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMeSecurityRoute = AuthenticatedMeSecurityRouteImport.update({
+  id: '/me/security',
+  path: '/me/security',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMeSessionsRoute = AuthenticatedMeSessionsRouteImport.update({
+  id: '/me/sessions',
+  path: '/me/sessions',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -256,11 +256,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -270,102 +270,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/me/sessions': {
-      id: '/_authenticated/me/sessions'
-      path: '/me/sessions'
-      fullPath: '/me/sessions'
-      preLoaderRoute: typeof AuthenticatedMeSessionsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/me/security': {
-      id: '/_authenticated/me/security'
-      path: '/me/security'
-      fullPath: '/me/security'
-      preLoaderRoute: typeof AuthenticatedMeSecurityRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/me/access': {
-      id: '/_authenticated/me/access'
-      path: '/me/access'
-      fullPath: '/me/access'
-      preLoaderRoute: typeof AuthenticatedMeAccessRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin/services': {
-      id: '/_authenticated/admin/services'
-      path: '/admin/services'
-      fullPath: '/admin/services'
-      preLoaderRoute: typeof AuthenticatedAdminServicesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin/scopes': {
-      id: '/_authenticated/admin/scopes'
-      path: '/admin/scopes'
-      fullPath: '/admin/scopes'
-      preLoaderRoute: typeof AuthenticatedAdminScopesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin/roles': {
-      id: '/_authenticated/admin/roles'
-      path: '/admin/roles'
-      fullPath: '/admin/roles'
-      preLoaderRoute: typeof AuthenticatedAdminRolesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin/resource-grants': {
-      id: '/_authenticated/admin/resource-grants'
-      path: '/admin/resource-grants'
-      fullPath: '/admin/resource-grants'
-      preLoaderRoute: typeof AuthenticatedAdminResourceGrantsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin/policies': {
-      id: '/_authenticated/admin/policies'
-      path: '/admin/policies'
-      fullPath: '/admin/policies'
-      preLoaderRoute: typeof AuthenticatedAdminPoliciesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin/permissions': {
-      id: '/_authenticated/admin/permissions'
-      path: '/admin/permissions'
-      fullPath: '/admin/permissions'
-      preLoaderRoute: typeof AuthenticatedAdminPermissionsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin/groups': {
-      id: '/_authenticated/admin/groups'
-      path: '/admin/groups'
-      fullPath: '/admin/groups'
-      preLoaderRoute: typeof AuthenticatedAdminGroupsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin/explain': {
-      id: '/_authenticated/admin/explain'
-      path: '/admin/explain'
-      fullPath: '/admin/explain'
-      preLoaderRoute: typeof AuthenticatedAdminExplainRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin/deny-rules': {
-      id: '/_authenticated/admin/deny-rules'
-      path: '/admin/deny-rules'
-      fullPath: '/admin/deny-rules'
-      preLoaderRoute: typeof AuthenticatedAdminDenyRulesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin/dashboard': {
-      id: '/_authenticated/admin/dashboard'
-      path: '/admin/dashboard'
-      fullPath: '/admin/dashboard'
-      preLoaderRoute: typeof AuthenticatedAdminDashboardRouteImport
+    '/_authenticated/admin/assignments': {
+      id: '/_authenticated/admin/assignments'
+      path: '/admin/assignments'
+      fullPath: '/admin/assignments'
+      preLoaderRoute: typeof AuthenticatedAdminAssignmentsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin/audit': {
@@ -375,11 +291,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/admin/assignments': {
-      id: '/_authenticated/admin/assignments'
-      path: '/admin/assignments'
-      fullPath: '/admin/assignments'
-      preLoaderRoute: typeof AuthenticatedAdminAssignmentsRouteImport
+    '/_authenticated/admin/dashboard': {
+      id: '/_authenticated/admin/dashboard'
+      path: '/admin/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AuthenticatedAdminDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/deny-rules': {
+      id: '/_authenticated/admin/deny-rules'
+      path: '/admin/deny-rules'
+      fullPath: '/admin/deny-rules'
+      preLoaderRoute: typeof AuthenticatedAdminDenyRulesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/explain': {
+      id: '/_authenticated/admin/explain'
+      path: '/admin/explain'
+      fullPath: '/admin/explain'
+      preLoaderRoute: typeof AuthenticatedAdminExplainRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/groups': {
+      id: '/_authenticated/admin/groups'
+      path: '/admin/groups'
+      fullPath: '/admin/groups'
+      preLoaderRoute: typeof AuthenticatedAdminGroupsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/permissions': {
+      id: '/_authenticated/admin/permissions'
+      path: '/admin/permissions'
+      fullPath: '/admin/permissions'
+      preLoaderRoute: typeof AuthenticatedAdminPermissionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/policies': {
+      id: '/_authenticated/admin/policies'
+      path: '/admin/policies'
+      fullPath: '/admin/policies'
+      preLoaderRoute: typeof AuthenticatedAdminPoliciesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/resource-grants': {
+      id: '/_authenticated/admin/resource-grants'
+      path: '/admin/resource-grants'
+      fullPath: '/admin/resource-grants'
+      preLoaderRoute: typeof AuthenticatedAdminResourceGrantsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/roles': {
+      id: '/_authenticated/admin/roles'
+      path: '/admin/roles'
+      fullPath: '/admin/roles'
+      preLoaderRoute: typeof AuthenticatedAdminRolesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/scopes': {
+      id: '/_authenticated/admin/scopes'
+      path: '/admin/scopes'
+      fullPath: '/admin/scopes'
+      preLoaderRoute: typeof AuthenticatedAdminScopesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/services': {
+      id: '/_authenticated/admin/services'
+      path: '/admin/services'
+      fullPath: '/admin/services'
+      preLoaderRoute: typeof AuthenticatedAdminServicesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/me/access': {
+      id: '/_authenticated/me/access'
+      path: '/me/access'
+      fullPath: '/me/access'
+      preLoaderRoute: typeof AuthenticatedMeAccessRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/me/security': {
+      id: '/_authenticated/me/security'
+      path: '/me/security'
+      fullPath: '/me/security'
+      preLoaderRoute: typeof AuthenticatedMeSecurityRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/me/sessions': {
+      id: '/_authenticated/me/sessions'
+      path: '/me/sessions'
+      fullPath: '/me/sessions'
+      preLoaderRoute: typeof AuthenticatedMeSessionsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
   }
@@ -433,3 +433,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

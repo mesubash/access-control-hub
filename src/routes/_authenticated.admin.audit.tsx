@@ -35,9 +35,22 @@ function AuditPage() {
 
   const columns: Column<AuditEntry>[] = [
     { key: "ts", header: "Time", width: "160px", render: (e) => formatDate(e.timestamp) },
-    { key: "sub", header: "Subject", render: (e) => <span className="font-mono text-xs">{e.subjectId}</span> },
-    { key: "perm", header: "Permission", render: (e) => <span className="font-mono text-xs">{e.permissionKey}</span> },
-    { key: "d", header: "Decision", width: "90px", render: (e) => <DecisionBadge decision={e.decision} /> },
+    {
+      key: "sub",
+      header: "Subject",
+      render: (e) => <span className="font-mono text-xs">{e.subjectId}</span>,
+    },
+    {
+      key: "perm",
+      header: "Permission",
+      render: (e) => <span className="font-mono text-xs">{e.permissionKey}</span>,
+    },
+    {
+      key: "d",
+      header: "Decision",
+      width: "90px",
+      render: (e) => <DecisionBadge decision={e.decision} />,
+    },
     { key: "reason", header: "Reason", render: (e) => e.reason ?? "—" },
     { key: "scope", header: "Scope", render: (e) => e.scopeId ?? "—" },
   ];

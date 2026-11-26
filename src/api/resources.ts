@@ -42,8 +42,7 @@ export type ScopeSummary = { id: string; name: string; path?: string; type?: str
 
 export const authzApi = {
   myScopes: () => api.get<ScopeSummary[]>("/api/authz/me/scopes"),
-  myPermissions: (scopeId: string) =>
-    api.get<string[]>("/api/authz/me/permissions", { scopeId }),
+  myPermissions: (scopeId: string) => api.get<string[]>("/api/authz/me/permissions", { scopeId }),
   explain: (input: unknown) => api.post<ExplainResult>("/api/v1/authorize/explain", input),
 };
 
@@ -57,14 +56,9 @@ export const metaApi = {
 
 export const scopesApi = {
   list: () => api.get<Scope[]>("/api/v1/scopes"),
-  create: (input: {
-    type: string;
-    name: string;
-    code: string;
-    parentId?: string | null;
-  }) => api.post<Scope>("/api/v1/scopes", input),
-  move: (id: string, newParentId: string) =>
-    api.post(`/api/v1/scopes/${id}/move`, { newParentId }),
+  create: (input: { type: string; name: string; code: string; parentId?: string | null }) =>
+    api.post<Scope>("/api/v1/scopes", input),
+  move: (id: string, newParentId: string) => api.post(`/api/v1/scopes/${id}/move`, { newParentId }),
 };
 
 /* --------------------------------- Roles -------------------------------- */
@@ -85,8 +79,7 @@ export const rolesApi = {
 /* ------------------------------ Assignments ----------------------------- */
 
 export const assignmentsApi = {
-  list: (params?: { subjectId?: string }) =>
-    api.get<Assignment[]>("/api/v1/assignments", params),
+  list: (params?: { subjectId?: string }) => api.get<Assignment[]>("/api/v1/assignments", params),
   create: (input: {
     subjectId: string;
     subjectType: string;
@@ -95,8 +88,7 @@ export const assignmentsApi = {
     expiresAt?: string | null;
     conditions?: unknown;
   }) => api.post<Assignment>("/api/v1/assignments", input),
-  revoke: (id: string, reason: string) =>
-    api.del(`/api/v1/assignments/${id}`, { reason }),
+  revoke: (id: string, reason: string) => api.del(`/api/v1/assignments/${id}`, { reason }),
 };
 
 /* ------------------------------ Deny Rules ------------------------------ */
@@ -120,19 +112,15 @@ export const denyRulesApi = {
 export const policiesApi = {
   list: () => api.get<Policy[]>("/api/v1/policies"),
   create: (input: Partial<Policy>) => api.post<Policy>("/api/v1/policies", input),
-  update: (id: string, input: Partial<Policy>) =>
-    api.put<Policy>(`/api/v1/policies/${id}`, input),
+  update: (id: string, input: Partial<Policy>) => api.put<Policy>(`/api/v1/policies/${id}`, input),
   del: (id: string) => api.del(`/api/v1/policies/${id}`),
 };
 
 /* ----------------------------- Resource Grants -------------------------- */
 
 export const resourceGrantsApi = {
-  list: (params?: {
-    subjectId?: string;
-    resourceType?: string;
-    resourceId?: string;
-  }) => api.get<ResourceGrant[]>("/api/v1/resource-grants", params),
+  list: (params?: { subjectId?: string; resourceType?: string; resourceId?: string }) =>
+    api.get<ResourceGrant[]>("/api/v1/resource-grants", params),
   create: (input: Partial<ResourceGrant>) =>
     api.post<ResourceGrant>("/api/v1/resource-grants", input),
   del: (id: string) => api.del(`/api/v1/resource-grants/${id}`),
@@ -166,7 +154,6 @@ export const permissionsApi = {
 /* --------------------------------- Audit -------------------------------- */
 
 export const auditApi = {
-  bySubject: (subjectId: string) =>
-    api.get<AuditEntry[]>(`/api/v1/audit/subject/${subjectId}`),
+  bySubject: (subjectId: string) => api.get<AuditEntry[]>(`/api/v1/audit/subject/${subjectId}`),
   recent: () => api.get<AuditEntry[]>("/api/v1/audit/recent"),
 };

@@ -5,7 +5,12 @@ import { cn } from "@/lib/utils";
 import { LogOut } from "lucide-react";
 import { useState } from "react";
 
-type NavItem = { to: string; label: string; permission?: string; featureFlag?: keyof import("@/api/types").FeatureFlags };
+type NavItem = {
+  to: string;
+  label: string;
+  permission?: string;
+  featureFlag?: keyof import("@/api/types").FeatureFlags;
+};
 
 const meItems: NavItem[] = [
   { to: "/me/access", label: "My Access" },

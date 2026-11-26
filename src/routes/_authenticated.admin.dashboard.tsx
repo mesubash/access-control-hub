@@ -13,12 +13,24 @@ export const Route = createFileRoute("/_authenticated/admin/dashboard")({
   component: DashboardPage,
 });
 
-function Stat({ label, value, loading }: { label: string; value: number | string; loading?: boolean }) {
+function Stat({
+  label,
+  value,
+  loading,
+}: {
+  label: string;
+  value: number | string;
+  loading?: boolean;
+}) {
   return (
     <div className="rounded border border-[var(--border)] bg-[var(--card)] px-4 py-3">
       <div className="text-xs text-[var(--muted-foreground)]">{label}</div>
       <div className="mt-1 text-[22px] font-semibold">
-        {loading ? <span className="inline-block h-5 w-10 animate-pulse rounded bg-[var(--muted)]" /> : value}
+        {loading ? (
+          <span className="inline-block h-5 w-10 animate-pulse rounded bg-[var(--muted)]" />
+        ) : (
+          value
+        )}
       </div>
     </div>
   );
@@ -27,7 +39,11 @@ function Stat({ label, value, loading }: { label: string; value: number | string
 function DashboardPage() {
   const { can } = useAuthz();
 
-  const roles = useQuery({ queryKey: ["roles"], queryFn: rolesApi.list, enabled: can("platform.role.read") });
+  const roles = useQuery({
+    queryKey: ["roles"],
+    queryFn: rolesApi.list,
+    enabled: can("platform.role.read"),
+  });
   const assignments = useQuery({
     queryKey: ["assignments"],
     queryFn: () => assignmentsApi.list(),
@@ -51,9 +67,22 @@ function DashboardPage() {
 
   const columns: Column<AuditEntry>[] = [
     { key: "ts", header: "Time", width: "160px", render: (e) => formatDate(e.timestamp) },
-    { key: "subject", header: "Subject", render: (e) => <span className="font-mono text-xs">{e.subjectId}</span> },
-    { key: "perm", header: "Permission", render: (e) => <span className="font-mono text-xs">{e.permissionKey}</span> },
-    { key: "dec", header: "Decision", width: "90px", render: (e) => <DecisionBadge decision={e.decision} /> },
+    {
+      key: "subject",
+      header: "Subject",
+      render: (e) => <span className="font-mono text-xs">{e.subjectId}</span>,
+    },
+    {
+      key: "perm",
+      header: "Permission",
+      render: (e) => <span className="font-mono text-xs">{e.permissionKey}</span>,
+    },
+    {
+      key: "dec",
+      header: "Decision",
+      width: "90px",
+      render: (e) => <DecisionBadge decision={e.decision} />,
+    },
     { key: "reason", header: "Reason", render: (e) => e.reason ?? "—" },
   ];
 
@@ -62,8 +91,16 @@ function DashboardPage() {
       <PageHeader title="Dashboard" description="Snapshot of your authorization system." />
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
         <Stat label="Roles" value={roles.data?.length ?? "—"} loading={roles.isLoading} />
-        <Stat label="Active assignments" value={assignments.data?.length ?? "—"} loading={assignments.isLoading} />
-        <Stat label="Deny rules" value={denyRules.data?.length ?? "—"} loading={denyRules.isLoading} />
+        <Stat
+          label="Active assignments"
+          value={assignments.data?.length ?? "—"}
+          loading={assignments.isLoading}
+        />
+        <Stat
+          label="Deny rules"
+          value={denyRules.data?.length ?? "—"}
+          loading={denyRules.isLoading}
+        />
         <Stat label="Policies" value={policies.data?.length ?? "—"} loading={policies.isLoading} />
       </div>
       <h2 className="mb-2 text-sm font-semibold">Recent audit entries</h2>

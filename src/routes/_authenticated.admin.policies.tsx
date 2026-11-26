@@ -49,10 +49,24 @@ function PoliciesPage() {
 
   const columns: Column<Policy>[] = [
     { key: "name", header: "Name", render: (p) => p.name },
-    { key: "effect", header: "Effect", width: "90px", render: (p) => <DecisionBadge decision={p.effect} /> },
-    { key: "mode", header: "Mode", width: "100px", render: (p) => <EnforcementBadge mode={p.enforcementMode} /> },
+    {
+      key: "effect",
+      header: "Effect",
+      width: "90px",
+      render: (p) => <DecisionBadge decision={p.effect} />,
+    },
+    {
+      key: "mode",
+      header: "Mode",
+      width: "100px",
+      render: (p) => <EnforcementBadge mode={p.enforcementMode} />,
+    },
     { key: "pri", header: "Priority", width: "80px", render: (p) => p.priority },
-    { key: "perm", header: "Permission", render: (p) => <span className="font-mono text-xs">{p.permissionKey}</span> },
+    {
+      key: "perm",
+      header: "Permission",
+      render: (p) => <span className="font-mono text-xs">{p.permissionKey}</span>,
+    },
     { key: "rt", header: "Resource type", render: (p) => p.resourceType ?? "—" },
   ];
 
@@ -101,7 +115,8 @@ function PoliciesPage() {
   );
 }
 
-const OPERATOR_HELP = "Operators: eq, neq, in, not_in, contains, exists, gt, gte, lt, lte, regex, before, after. Fields: subject.*, permission, resource.*, context.*";
+const OPERATOR_HELP =
+  "Operators: eq, neq, in, not_in, contains, exists, gt, gte, lt, lte, regex, before, after. Fields: subject.*, permission, resource.*, context.*";
 
 function PolicyDialog({
   open,
@@ -203,9 +218,17 @@ function PolicyDialog({
               onChange={(e) => setPriority(Number(e.target.value))}
             />
             <Label htmlFor="p-perm">Permission key</Label>
-            <Input id="p-perm" value={permissionKey} onChange={(e) => setPermissionKey(e.target.value)} />
+            <Input
+              id="p-perm"
+              value={permissionKey}
+              onChange={(e) => setPermissionKey(e.target.value)}
+            />
             <Label htmlFor="p-rt">Resource type (optional)</Label>
-            <Input id="p-rt" value={resourceType} onChange={(e) => setResourceType(e.target.value)} />
+            <Input
+              id="p-rt"
+              value={resourceType}
+              onChange={(e) => setResourceType(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="p-cond">Conditions (JSON)</Label>
@@ -240,8 +263,13 @@ function PolicyDialog({
               Delete
             </Button>
           ) : null}
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => save.mutate()} disabled={save.isPending || !name || !permissionKey || !!jsonErr}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => save.mutate()}
+            disabled={save.isPending || !name || !permissionKey || !!jsonErr}
+          >
             {save.isPending ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>

@@ -84,7 +84,9 @@ function ScopesPage() {
           {q.isLoading ? (
             <div className="p-3 text-sm text-[var(--muted-foreground)]">Loading…</div>
           ) : tree.length === 0 ? (
-            <div className="p-6 text-center text-sm text-[var(--muted-foreground)]">No scopes yet.</div>
+            <div className="p-6 text-center text-sm text-[var(--muted-foreground)]">
+              No scopes yet.
+            </div>
           ) : (
             <ul className="py-2">
               {tree.map((n) => (
@@ -190,8 +192,7 @@ function CreateScopeDialog({
   const [code, setCode] = useState("");
   const [parentId, setParentId] = useState<string>(parent?.id ?? "");
   const m = useMutation({
-    mutationFn: () =>
-      scopesApi.create({ type, name, code, parentId: parentId || null }),
+    mutationFn: () => scopesApi.create({ type, name, code, parentId: parentId || null }),
     onSuccess: () => {
       toast.success("Scope created");
       qc.invalidateQueries({ queryKey: ["scopes"] });
@@ -218,11 +219,10 @@ function CreateScopeDialog({
           <Input id="s-parent" value={parentId} onChange={(e) => setParentId(e.target.value)} />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button
-            onClick={() => m.mutate()}
-            disabled={m.isPending || !name || !code || !type}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={() => m.mutate()} disabled={m.isPending || !name || !code || !type}>
             {m.isPending ? "Creating..." : "Create"}
           </Button>
         </DialogFooter>

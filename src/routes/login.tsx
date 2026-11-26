@@ -108,7 +108,10 @@ function LoginPage() {
           </div>
 
           {error ? (
-            <div className="rounded-md bg-[var(--destructive-subtle)] px-3 py-2 text-sm text-[var(--destructive)]" role="alert">
+            <div
+              className="rounded-md bg-[var(--destructive-subtle)] px-3 py-2 text-sm text-[var(--destructive)]"
+              role="alert"
+            >
               {error}
             </div>
           ) : null}

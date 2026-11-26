@@ -130,13 +130,12 @@ export async function request<T = unknown>(path: string, opts: Options = {}): Pr
 }
 
 export const api = {
-  get: <T,>(path: string, query?: Options["query"]) => request<T>(path, { query }),
-  post: <T,>(path: string, body?: unknown, query?: Options["query"]) =>
+  get: <T>(path: string, query?: Options["query"]) => request<T>(path, { query }),
+  post: <T>(path: string, body?: unknown, query?: Options["query"]) =>
     request<T>(path, { method: "POST", body, query }),
-  put: <T,>(path: string, body?: unknown) => request<T>(path, { method: "PUT", body }),
-  patch: <T,>(path: string, body?: unknown) => request<T>(path, { method: "PATCH", body }),
-  del: <T,>(path: string, query?: Options["query"]) =>
-    request<T>(path, { method: "DELETE", query }),
+  put: <T>(path: string, body?: unknown) => request<T>(path, { method: "PUT", body }),
+  patch: <T>(path: string, body?: unknown) => request<T>(path, { method: "PATCH", body }),
+  del: <T>(path: string, query?: Options["query"]) => request<T>(path, { method: "DELETE", query }),
 };
 
 // Raw envelope call (used by login to read message + data together).
@@ -155,5 +154,5 @@ export async function requestEnvelope<T = unknown>(
   if (!res.ok) {
     throw new ApiError(res.status, body?.message || res.statusText || `HTTP ${res.status}`, body);
   }
-  return { status: body?.status, message: body?.message, data: (body?.data as T) };
+  return { status: body?.status, message: body?.message, data: body?.data as T };
 }
